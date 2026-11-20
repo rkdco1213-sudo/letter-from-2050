@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2050년에서 온 편지 — 기후 대응 요원</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1f2433; --muted:#5d667a; --paper:#fffdf7; --line:#e7e1d3;
+  --reduce:#2e9d6a; --reduce-bg:#e4f6ec; --adapt:#3a7bd5; --adapt-bg:#e5effc;
+  --accent:#ff8a5b; --warn:#e0533d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Gowun Dodum',system-ui,sans-serif;color:var(--ink);background:#111;overflow:hidden;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,.jua{font-family:'Jua','Gowun Dodum',sans-serif;font-weight:400}
+button{font-family:inherit;cursor:pointer;border:none}
+#app{position:relative;width:100%;height:100%;overflow:hidden}
+
+/* ---------- 배경 장면 ---------- */
+#bg{position:absolute;inset:0;transition:opacity .45s ease}
+#bg.fade{opacity:0}
+#scenery{position:absolute;inset:0;pointer-events:none}
+.sc{position:absolute;line-height:1;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18));animation:float 6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+#ground{position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(transparent,rgba(0,0,0,.18));pointer-events:none}
+
+/* ---------- 상단 HUD ---------- */
+#hud{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:14px;padding:12px 18px;z-index:5;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+#hud.hidden{display:none}
+#agentTag{font-family:'Jua';font-size:18px;background:rgba(0,0,0,.28);padding:6px 14px;border-radius:999px;white-space:nowrap}
+#chapDots{display:flex;gap:6px;flex:1;justify-content:center}
+.dot{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);opacity:.55;transition:.3s}
+.dot.on{opacity:1;background:#fff;border-color:#ffd166;transform:scale(1.12)}
+.dot.done{opacity:1;background:rgba(255,255,255,.85)}
+#muteBtn{font-size:20px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff}
+#gaugeWrap{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.28);padding:6px 12px;border-radius:999px}
+#gaugeBar{width:110px;height:12px;background:rgba(255,255,255,.3);border-radius:99px;overflow:hidden}
+#gaugeFill{height:100%;width:0;background:linear-gradient(90deg,#7ee8a1,#ffd166);transition:width .8s}
+#gaugeTxt{font-family:'Jua';font-size:15px;white-space:nowrap}
+
+/* ---------- 대화 ---------- */
+#portrait{position:absolute;left:50%;bottom:0;transform:translateX(-50%);z-index:3;pointer-events:none;transition:opacity .3s, transform .3s;display:flex;justify-content:center;align-items:flex-end}
+#portrait.hidden{opacity:0;transform:translateX(-50%) translateY(20px)}
+#portrait img{display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+#portrait .rigOn img{visibility:hidden}
+#portrait .rigWrap{position:relative}
+.rigc{position:absolute;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+#eSpr .rigWrap{position:relative}#eSpr img{display:block}#eSpr .rigOn img{visibility:hidden}
+#portrait.hop{animation:hop .7s ease}
+@keyframes hop{0%{transform:translateX(-50%)}28%{transform:translateX(-50%) translateY(-26px) scale(.98,1.03)}52%{transform:translateX(-50%) translateY(0) scale(1.04,.96)}72%{transform:translateX(-50%) translateY(-6px) scale(.99,1.01)}100%{transform:translateX(-50%)}}
+#portrait.sag{animation:sag .9s ease}
+@keyframes sag{0%{transform:translateX(-50%)}40%{transform:translateX(-50%) translateY(10px) scale(1.01,.985)}100%{transform:translateX(-50%) translateY(0)}}
+#portrait.lean{animation:lean .6s ease}
+@keyframes lean{0%{transform:translateX(-50%)}45%{transform:translateX(-50%) translateY(-8px) rotate(-1.2deg)}100%{transform:translateX(-50%)}}
+#portrait{transform-origin:50% 100%}
+#portrait .emo{font-size:150px;margin-bottom:220px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3))}
+#portrait.pop{animation:pop .35s}
+@keyframes pop{0%{transform:translateX(-50%) translateY(14px);opacity:.3}100%{transform:translateX(-50%);opacity:1}}
+#dialog{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:min(900px,calc(100% - 28px));min-height:168px;background:rgba(255,253,247,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:22px;padding:22px 26px 18px;box-shadow:0 12px 40px rgba(0,0,0,.3);z-index:4;cursor:pointer;user-select:none}
+.genderRow{display:flex;gap:14px;justify-content:center;margin:0 0 16px}
+.gBtn{width:150px;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.25)!important;border-radius:20px;padding:8px 8px 10px;color:#fff;font-family:'Jua';font-size:20px;transition:.2s;overflow:hidden}
+.gBtn img{height:170px;display:block;margin:0 auto 4px;object-fit:contain;object-position:top}
+.gBtn.sel{background:rgba(255,209,102,.3);border-color:#ffd166!important;transform:translateY(-4px)}
+.rpAgent{height:180px;display:block;margin:0 auto 4px}
+#dialog.hidden{display:none}
+#choices.hidden{display:none}
+#speaker{position:absolute;top:-20px;left:24px;font-family:'Jua';font-size:20px;color:#fff;padding:6px 18px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+#speaker.hidden{display:none}
+#line{font-size:23px;line-height:1.6;min-height:74px;word-break:keep-all}
+#line.narr{color:var(--muted);font-style:italic}
+#choices{position:absolute;left:50%;transform:translateX(-50%);bottom:205px;width:min(760px,calc(100% - 40px));display:flex;flex-direction:column;gap:10px;z-index:5}
+#choices button{font-family:'Gowun Dodum';font-size:20px;line-height:1.45;text-align:left;padding:14px 20px;border-radius:16px;background:rgba(31,36,51,.88);color:#fff;border:2px solid rgba(255,209,102,.6)!important;box-shadow:0 8px 20px rgba(0,0,0,.3);animation:rise .3s ease both;word-break:keep-all}
+#choices button:hover{background:rgba(58,66,96,.95)}
+#choices button.tried{opacity:.45;text-decoration:line-through}
+#choiceTag{position:absolute;top:-20px;left:24px;font-family:'Jua';font-size:18px;color:#1f2433;background:#ffd166;padding:6px 16px;border-radius:12px}
+#nextHint{position:absolute;right:22px;bottom:12px;font-size:15px;color:var(--muted);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ---------- 장 제목 카드 ---------- */
+#titleCard{position:absolute;inset:0;display:grid;place-items:center;z-index:8;pointer-events:none;opacity:0;transition:opacity .5s}
+#titleCard.show{opacity:1}
+#titleCard .box{background:rgba(255,253,247,.96);padding:28px 54px;border-radius:26px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+#titleCard .num{font-family:'Jua';color:var(--accent);font-size:20px}
+#titleCard .big{font-family:'Jua';font-size:44px;margin-top:4px}
+#titleCard .emo{font-size:64px}
+
+/* ---------- 패널(조사·분류 등) ---------- */
+#panel{position:absolute;inset:66px 0 0 0;z-index:6;display:flex;justify-content:center;align-items:flex-start;overflow-y:auto;padding:8px 14px 30px}
+#panel.hidden{display:none}
+.sheet{width:min(940px,100%);background:var(--paper);border-radius:24px;padding:24px 26px 26px;box-shadow:0 16px 50px rgba(0,0,0,.35);animation:rise .4s ease}
+@keyframes rise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{font-size:30px;display:flex;align-items:center;gap:10px}
+.tag{display:inline-block;font-family:'Jua';font-size:15px;padding:4px 12px;border-radius:999px;background:#fff1e9;color:var(--accent);margin-bottom:6px}
+.lead{font-size:19px;color:var(--muted);margin:6px 0 16px;line-height:1.55;word-break:keep-all}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{position:relative;border:2px solid var(--line);background:#fff;border-radius:18px;padding:16px 16px 14px;text-align:left;transition:.25s;font-size:17px}
+.card .ic{font-size:40px}
+.card h3{font-size:21px;margin:6px 0 6px}
+.card .body{line-height:1.6;color:#2f3647;word-break:keep-all;max-height:0;overflow:hidden;transition:max-height .45s ease}
+.card .openme{color:var(--accent);font-family:'Jua';font-size:16px}
+.card.open .body{max-height:400px}
+.card.open .openme{display:none}
+.card.open{border-color:#ffd166;background:#fffaf0}
+.card .check{position:absolute;top:10px;right:12px;font-size:22px;opacity:0;transition:.3s}
+.card.open .check{opacity:1}
+.step{margin-top:22px;padding-top:18px;border-top:2px dashed var(--line)}
+.step.locked{opacity:.35;pointer-events:none}
+.step h3{font-size:22px;margin-bottom:10px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;font-size:19px;padding:14px 18px;border-radius:14px;background:#f4f1ea;border:2px solid transparent;line-height:1.45;word-break:keep-all}
+.opt:hover{border-color:#ffd166}
+.opt.right{background:var(--reduce-bg);border-color:var(--reduce)}
+.opt.wrong{background:#fde8e4;border-color:var(--warn);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.fb{margin-top:10px;font-size:18px;line-height:1.55;padding:12px 16px;border-radius:12px;display:none;word-break:keep-all}
+.fb.show{display:block}
+.fb.ok{background:var(--reduce-bg);color:#1d6b47}
+.fb.no{background:#fde8e4;color:#9b2c1d}
+textarea,input[type=text]{width:100%;font-family:inherit;font-size:19px;padding:14px 16px;border:2px solid var(--line);border-radius:14px;background:#fff;resize:vertical;line-height:1.5}
+textarea:focus,input:focus{outline:none;border-color:#ffd166}
+.count{text-align:right;font-size:15px;color:var(--muted);margin-top:4px}
+.btn{font-family:'Jua';font-size:21px;padding:13px 30px;border-radius:999px;background:var(--accent);color:#fff;box-shadow:0 6px 0 #d96a3e;transition:.15s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #d96a3e}
+.btn:disabled{background:#c9c2b4;box-shadow:0 6px 0 #a9a294;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 6px 0 #d8d1c2;border:2px solid var(--line)}
+.btnrow{display:flex;gap:12px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+
+/* 분류 */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.lg{flex:1;min-width:220px;border-radius:16px;padding:12px 16px;font-size:17px;line-height:1.5}
+.lg b{font-family:'Jua';font-weight:400;font-size:21px;display:block}
+.lg.r{background:var(--reduce-bg);color:#1d6b47}
+.lg.a{background:var(--adapt-bg);color:#1f4f93}
+.acts{display:grid;gap:12px}
+.act{border:2px solid var(--line);border-radius:18px;padding:14px 16px;background:#fff;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.act .ae{font-size:38px}
+.act .at{flex:1;min-width:200px;font-size:19px;line-height:1.45;word-break:keep-all}
+.act .ab{display:flex;gap:8px}
+.act .ab button{font-family:'Jua';font-size:18px;padding:10px 16px;border-radius:12px}
+.bR{background:var(--reduce-bg);color:var(--reduce);border:2px solid var(--reduce)!important}
+.bA{background:var(--adapt-bg);color:var(--adapt);border:2px solid var(--adapt)!important}
+.act.wrong{animation:shake .35s;border-color:var(--warn)}
+.act.doneR{border-color:var(--reduce);background:#f5fcf8}
+.act.doneA{border-color:var(--adapt);background:#f5f9ff}
+.act .why{flex-basis:100%;font-size:16px;color:var(--muted);line-height:1.5;padding-left:52px;word-break:keep-all}
+.badge{font-family:'Jua';font-size:16px;padding:4px 12px;border-radius:999px;color:#fff}
+.badge.r{background:var(--reduce)} .badge.a{background:var(--adapt)}
+
+/* 표지 */
+#cover{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:20px;background:linear-gradient(rgba(15,20,50,.55),rgba(15,20,50,.75)),url(img/bg_prologue.webp) center/cover no-repeat,#151a3a}
+#cover.hidden{display:none}
+#cover .star{position:absolute;color:#fff;opacity:.7;animation:blink 2.6s infinite}
+.coverBox{position:relative;text-align:center;color:#fff;max-width:640px;width:100%}
+.coverBox .env{font-size:96px;animation:float 4s ease-in-out infinite}
+.coverBox h1{font-size:54px;margin:8px 0 2px;text-shadow:0 4px 18px rgba(0,0,0,.5)}
+.coverBox .sub{font-size:21px;opacity:.85;margin-bottom:26px}
+.coverBox input{text-align:center;font-family:'Jua';font-size:24px;max-width:360px}
+.coverBox .btnrow{justify-content:center}
+.teacher{margin-top:22px;font-size:15px;opacity:.75;line-height:1.6}
+.teacher summary{cursor:pointer;font-family:'Jua';font-size:16px}
+.teacher div{text-align:left;background:rgba(255,255,255,.1);padding:12px 16px;border-radius:12px;margin-top:8px}
+
+/* 꽃잎 */
+#petals{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.petal{position:absolute;top:-50px;animation:fall linear infinite;opacity:.9}
+@keyframes fall{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(60px,115vh) rotate(420deg)}}
+/* 편지 */
+#letterOv{position:absolute;inset:0;z-index:9;display:grid;place-items:center;padding:20px;background:rgba(20,25,45,.45);animation:rise .6s ease}
+#letterOv.hidden{display:none}
+.paper{width:min(640px,100%);max-height:88vh;overflow:auto;background:#fffaf0 repeating-linear-gradient(transparent 0 37px,#f1e3cc 37px 38px);border-radius:16px;padding:30px 34px 24px;box-shadow:0 24px 60px rgba(0,0,0,.45);font-size:21px;line-height:38px;white-space:pre-line;word-break:keep-all;position:relative}
+.paper .stamp{position:absolute;right:22px;top:16px;font-size:44px;transform:rotate(12deg)}
+.paper .btnrow{line-height:normal}
+/* 크레딧 */
+#credits{position:fixed;inset:0;z-index:15;overflow:hidden;background:linear-gradient(rgba(8,12,30,.78),rgba(8,12,30,.92)),url(img/bg_ending.webp) center/cover;color:#fff;text-align:center}
+#credits.hidden{display:none}
+#roll{position:absolute;left:0;right:0;top:0;padding:0 20px}
+.cr-sec{margin:0 auto 70px;max-width:620px}
+.cr-sec h4{font-family:'Jua';font-weight:400;font-size:18px;color:#ffd166;letter-spacing:2px;margin-bottom:12px}
+.cr-sec .big{font-family:'Jua';font-size:46px;line-height:1.3}
+.cr-sec .nm{font-family:'Jua';font-size:28px}
+.cr-sec p{font-size:19px;opacity:.88;line-height:1.7;word-break:keep-all}
+.cr-row{display:flex;align-items:center;gap:18px;justify-content:center;margin:14px 0;text-align:left}
+.cr-row img{height:110px;width:90px;object-fit:contain;object-position:top}
+.cr-row div{min-width:220px}
+.cr-row .role{font-size:16px;opacity:.75}
+.cr-group{display:flex;justify-content:center;align-items:flex-end;gap:2px;flex-wrap:nowrap;margin:20px 0 10px}
+.cr-group img{height:120px;object-fit:contain;object-position:top}
+#crSkip{position:fixed;right:18px;top:16px;z-index:16;background:rgba(255,255,255,.15);color:#fff;font-family:'Jua';font-size:16px;padding:8px 16px;border-radius:999px}
+#crEnd{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:16;display:none}
+/* 에필로그 */
+#epi{position:fixed;inset:0;z-index:14;background:#000;overflow:hidden;color:#fff}
+#epi.hidden{display:none}
+.ebg{position:absolute;inset:-5%;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease,filter 2.4s ease;filter:grayscale(.9) brightness(.5) sepia(.25)}
+.ebg.show{opacity:1}.ebg.kb{animation:kb 8s ease-out forwards}.ebg.heal{filter:none}.ebg.dim{filter:brightness(.35)}
+@keyframes kb{from{transform:scale(1.16) translateX(-1.5%)}to{transform:scale(1.02) translateX(1%)}}
+#eShade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),transparent 30%,transparent 55%,rgba(0,0,0,.75));pointer-events:none}
+#eYear{position:absolute;top:6%;left:50%;transform:translateX(-50%) scale(.9);font-family:'Jua';font-size:min(15vw,130px);letter-spacing:6px;text-shadow:0 6px 30px rgba(0,0,0,.7);opacity:0;transition:opacity .6s,transform .6s}
+#eYear.show{opacity:1;transform:translateX(-50%) scale(1)}
+#eYear.gold{color:#ffd166;text-shadow:0 0 30px rgba(255,209,102,.9),0 0 80px rgba(255,180,80,.6)}
+#eCap{position:absolute;left:50%;bottom:7%;transform:translate(-50%,10px);width:min(920px,92%);text-align:center;font-size:min(5.2vw,30px);line-height:1.55;text-shadow:0 2px 14px rgba(0,0,0,.9);word-break:keep-all;opacity:0;transition:opacity .7s,transform .7s;z-index:3}
+#eCap.show{opacity:1;transform:translate(-50%,0)}
+#eCap b{font-family:'Jua';font-weight:400;color:#ffd166}
+#eSpr{position:absolute;left:50%;bottom:-10%;transform:translate(-50%,60px);opacity:0;transition:transform 1s cubic-bezier(.2,.9,.25,1.2),opacity .9s;filter:drop-shadow(0 12px 30px rgba(0,0,0,.55));z-index:2}
+#eSpr.show{opacity:1;transform:translate(-50%,0)}
+#eWipe{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 55%,rgba(255,252,225,1),rgba(255,236,170,.55) 28%,transparent 60%);opacity:0;z-index:4}
+#eWipe.go{animation:wipe 1.7s ease-out}
+@keyframes wipe{0%{opacity:0;transform:scale(.15)}30%{opacity:1}100%{opacity:0;transform:scale(2.8)}}
+#eFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:6;transition:opacity .25s}
+#eSpark{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.spk{position:absolute;font-size:22px;animation:spk 1.8s ease-out forwards}
+@keyframes spk{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(200deg)}}
+#eTitle{position:absolute;inset:0;display:grid;place-items:center;text-align:center;opacity:0;transition:opacity 1.4s;z-index:5;pointer-events:none}
+#eTitle.show{opacity:1}
+#eTitle .t1{font-family:'Jua';font-size:min(9vw,68px);line-height:1.3;text-shadow:0 0 24px rgba(255,209,102,.8),0 4px 30px rgba(0,0,0,.7);animation:breathe 3s ease-in-out infinite}
+#eTitle .t2{font-size:min(4.5vw,24px);margin-top:16px;opacity:.9;letter-spacing:3px;text-shadow:0 2px 10px rgba(0,0,0,.8)}
+@keyframes breathe{50%{letter-spacing:3px;text-shadow:0 0 40px rgba(255,209,102,1),0 4px 30px rgba(0,0,0,.7)}}
+#eSkip{position:absolute;right:18px;top:16px;z-index:8;background:rgba(255,255,255,.15);color:#fff;font-family:'Jua';font-size:16px;padding:8px 16px;border-radius:999px}
+/* 마지막 영상 */
+#fin{position:fixed;inset:0;z-index:17;background:#000;display:grid;place-items:center}
+#fin.hidden{display:none}
+#fin video{width:100%;height:100%;object-fit:contain;background:#000}
+#fin .fbtn{position:absolute;z-index:2;background:rgba(255,255,255,.16);color:#fff;font-family:'Jua';font-size:16px;padding:8px 16px;border-radius:999px}
+#finSkip{right:18px;top:16px}#finSnd{left:18px;top:16px}
+#finEnd{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:2;display:none}
+/* 보고서 */
+.report h2{justify-content:center}
+.rpHead{text-align:center;margin-bottom:14px}
+.rpHead .stars{font-size:38px;letter-spacing:4px}
+.rpGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0}
+.rpItem{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;font-size:16px;line-height:1.55;word-break:keep-all}
+.rpItem b{font-family:'Jua';font-weight:400;font-size:18px}
+.promiseCard{background:linear-gradient(135deg,#fff4d6,#ffe3d3);border-radius:18px;padding:16px 20px;font-size:18px;line-height:1.7;word-break:keep-all}
+.promiseCard b{font-family:'Jua';font-weight:400}
+.letter{background:#fff;border:2px dashed #ffb38f;border-radius:18px;padding:18px 22px;font-size:19px;line-height:1.8;margin-top:14px;word-break:keep-all}
+.typeRow{display:flex;gap:10px;margin:6px 0 4px}
+.typeRow button{flex:1;font-family:'Jua';font-size:19px;padding:12px;border-radius:14px;background:#f4f1ea;border:2px solid transparent!important}
+.typeRow button.sel.r{background:var(--reduce-bg);border-color:var(--reduce)!important;color:var(--reduce)}
+.typeRow button.sel.a{background:var(--adapt-bg);border-color:var(--adapt)!important;color:var(--adapt)}
+label.q{display:block;font-family:'Jua';font-size:19px;margin:14px 0 6px}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1f2433;color:#fff;padding:12px 22px;border-radius:999px;font-size:17px;z-index:20;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+
+@media (max-width:640px){
+  #portrait{width:120px;height:120px;font-size:72px;bottom:190px}
+  #line{font-size:19px}
+  #dialog{padding:20px 18px 16px}
+  .dot{width:30px;height:30px;font-size:16px}
+  #gaugeBar{width:60px}
+  .coverBox h1{font-size:38px}
+  #titleCard .big{font-size:32px}
+  .act .why{padding-left:0}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bg"></div>
+  <div id="scenery"></div>
+  <div id="ground"></div>
+
+  <div id="hud" class="hidden">
+    <div id="agentTag">🕵️ 요원</div>
+    <div id="chapDots"></div>
+    <button id="muteBtn" title="배경음악 켜기/끄기">🔊</button>
+    <div id="gaugeWrap"><span>🏘️</span><div id="gaugeBar"><div id="gaugeFill"></div></div><span id="gaugeTxt">0%</span></div>
+  </div>
+
+  <div id="portrait" class="hidden"></div>
+  <div id="dialog" class="hidden">
+    <div id="speaker" class="hidden"></div>
+    <div id="line"></div>
+    <div id="nextHint">▼ 화면을 눌러 계속</div>
+  </div>
+
+  <div id="petals"></div>
+  <div id="letterOv" class="hidden"></div>
+  <div id="choices" class="hidden"></div>
+  <div id="titleCard"><div class="box"><div class="emo"></div><div class="num"></div><div class="big"></div></div></div>
+  <div id="panel" class="hidden"></div>
+
+  <div id="cover">
+    <div class="coverBox">
+      <div class="env">💌</div>
+      <h1>2050년에서 온 편지</h1>
+      <div class="sub">기후 대응 요원이 되어 미래 마을을 지켜라!</div>
+      <div class="genderRow">
+        <button class="gBtn" data-g="boy"><img src="img/ch_agent_boy.webp" alt="">남자 요원</button>
+        <button class="gBtn" data-g="girl"><img src="img/ch_agent_girl.webp" alt="">여자 요원</button>
+      </div>
+      <input type="text" id="nameIn" maxlength="10" placeholder="요원 이름을 쓰세요">
+      <div class="btnrow">
+        <button class="btn" id="startBtn" disabled>임무 시작 ▶</button>
+        <button class="btn ghost" id="resumeBtn" style="display:none">이어하기</button>
+      </div>
+      <details class="teacher">
+        <summary>선생님 안내</summary>
+        <div>
+          · 과학 4-2 「기후 변화에 어떻게 대응할 수 있을까?」 차시용 · 1인 1태블릿 · 약 2~3차시<br>
+          · 사건 6개: 폭염 → 산불 → 태풍 → 식량 → 바다 수온 상승 → 동물 멸종 위기<br>
+          · 장마다 <b>이야기 → 자료 카드 4장 → 확인 문제 3개 → 현장 출동(선택 미션 2개) → 개인/사회가 할 수 있는 일 분류 → 조사 수첩(개인 대응·사회 대응·까닭 쓰기)</b><br>· 6장이 끝나면 최종 점검 퀴즈 7문제 → 나의 실천 약속 + 사회에 보내는 제안 → 결과 보고서<br>
+          · 마지막에 나의 실천 약속을 쓰면 결과 보고서가 나옵니다. <b>보고서 화면을 캡처해 제출</b>하게 하세요.<br>
+          · 진행 상황은 이 기기에만 저장되며 선생님께 자동으로 전송되지 않습니다. 나눠서 할 때는 2장·4장이 끝난 뒤 멈추고, 다음 시간에 같은 태블릿에서 ‘이어하기’를 누르면 됩니다.
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div id="epi" class="hidden"></div>
+<div id="fin" class="hidden"><video id="finV" playsinline preload="none"></video><button class="fbtn" id="finSnd">🔊 소리 켜기</button><button class="fbtn" id="finSkip">건너뛰기 ⏩</button><button class="btn" id="finEnd">결과 보고서 보기 📋</button></div>
+<div id="credits" class="hidden"><div id="roll"></div><button id="crSkip">건너뛰기 ⏩</button><button class="btn" id="crEnd">마지막 영상 보기 🎬</button></div>
+
+<script>
+/* ================= 등장인물 ================= */
+const P = {
+  bot:{n:'기후봇',e:'🤖',c:'#4f8cff'},
+  sky:{n:'하늘이',e:'👧',c:'#ff8a5b'},
+  gma:{n:'하늘이 할머니',e:'👵',c:'#c97b3a'},
+  fire:{n:'박 대원',e:'🧑‍🚒',c:'#d64933'},
+  fish:{n:'어부 할아버지',e:'👴',c:'#3f6e9e'},
+  farm:{n:'과수원 이모',e:'🧑‍🌾',c:'#6a9a2e'},
+  diver:{n:'해녀 할머니',e:'🤿',c:'#1c8aa6'},
+  dr:{n:'윤 박사',e:'🧑‍🔬',c:'#7b5cc4'},
+  me:{n:'',e:'🕵️',c:'#2f3e8f'},
+  n:null
+};
+/* 준비된 그림 파일 (새 표정·배경이 오면 여기에 추가) */
+const IMG = new Set(['agent_boy','agent_boy_happy','agent_girl','agent_girl_happy','sky','sky_worry','sky_happy','bot','gma','fire','fish','farm','diver','dr']);
+/* [실제 키(어른=1), 그림에 보이는 몸 비율(전신=1)] — 캐릭터끼리 키를 맞추는 값 */
+const SPR = {agent_boy:[.86,.6],agent_girl:[.84,.58],sky:[.8,1],bot:[.5,1],gma:[.88,.66],fire:[1,.66],fish:[.97,.68],farm:[.95,.84],diver:[.9,.6],dr:[1,.85]};
+function spriteKey(who,mood){
+  const base = who==='me' ? 'agent_'+(S.gender||'boy') : who;
+  if(mood && IMG.has(base+'_'+mood)) return base+'_'+mood;
+  return IMG.has(base) ? base : null;
+}
+
+/* ================= 장면 ================= */
+const SCENES = {
+  prologue:{bg:'linear-gradient(180deg,#1e2a5a,#4a3f8f 60%,#7a5fa8)',sc:[['🌙',8,10,70],['⭐',30,8,26],['⭐',62,16,22],['⭐',84,9,30],['📮',78,52,80],['🏘️',12,55,90]]},
+  heat:{bg:'linear-gradient(180deg,#ffcf6b,#ff8a4c 55%,#e85d3a)',sc:[['☀️',78,6,110],['🏙️',8,50,110],['🌡️',88,48,70],['🥵',30,58,54]]},
+  fire:{bg:'linear-gradient(180deg,#5b4040,#a5502d 55%,#d9702e)',sc:[['🔥',14,52,90],['🌲',30,48,80],['🔥',70,56,70],['🚁',72,10,70],['💨',46,18,60]]},
+  storm:{bg:'linear-gradient(180deg,#38465a,#5f7690 55%,#8aa3b8)',sc:[['🌀',72,6,110],['🌧️',18,8,80],['🌊',10,56,90],['🏠',70,54,80],['⛵',40,60,56]]},
+  food:{bg:'linear-gradient(180deg,#bfe7ff,#d9f2b4 55%,#a8d66b)',sc:[['🍎',12,52,74],['🌳',26,44,100],['🥭',74,54,64],['🌾',86,48,80],['☀️',82,6,80]]},
+  sea:{bg:'linear-gradient(180deg,#5fd0e6,#1a8fbf 45%,#0c4f7a)',sc:[['🐟',16,30,54],['🪸',10,60,80],['🪨',76,62,80],['🐠',70,24,54],['🫧',48,14,40]]},
+  animal:{bg:'linear-gradient(180deg,#d9f1ff,#bfe3f2 55%,#e9f7ff)',sc:[['🐻‍❄️',14,50,96],['🧊',30,62,64],['🐝',74,24,54],['🌸',82,54,70],['🐧',58,58,60]]},
+  ending:{bg:'linear-gradient(180deg,#9be7ff,#c6f3d6 55%,#7ed6a5)',sc:[['🌈',40,4,120],['🌳',8,48,100],['🏡',74,50,96],['🐝',60,26,46],['🍎',28,60,56],['🐟',88,30,46]]}
+};
+
+/* ================= 챕터 데이터 ================= */
+const OX=['⭕ 맞아요','❌ 아니에요'];
+const CH = [
+{ key:'heat', icon:'🥵', title:'뜨거운 여름, 폭염',
+  intro:[
+    ['sky:worry','첫 번째 사건이야. 올여름 우리 마을은 기온이 40℃를 넘는 날이 정말 많았어.'],
+    ['n','매미 소리마저 멈춘 한낮, 마을 골목에는 아무도 보이지 않는다.'],
+    ['gma','에구, 이 할미는 밭일하다가 어지러워서 쓰러질 뻔했단다.'],
+    ['sky:worry','학교 운동장도 너무 뜨거워서 체육 시간에 밖에 나갈 수가 없어.'],
+    ['sky:worry','밤에도 기온이 잘 안 떨어져서 잠도 제대로 못 자.'],
+    ['me','할머니, 제가 폭염을 이겨 낼 방법을 꼭 찾아올게요!'],
+    ['bot','{name} 요원님, 2026년 자료실에서 폭염에 대해 조사해 봐요!']
+  ],
+  cards:[
+    ['🌡️','역대 가장 더운 날','2018년 8월, 강원도 홍천의 기온이 41.0℃까지 올라갔어요. 우리나라에서 기온을 관측한 뒤로 가장 높은 기록이에요.'],
+    ['🏥','폭염이 위험한 까닭','몸의 열이 밖으로 빠져나가지 못하면 어지럽거나 쓰러질 수 있어요(온열 질환). 특히 노인, 어린이, 밖에서 일하는 사람이 위험해요.'],
+    ['🏠','폭염에 대비하는 방법','지역마다 에어컨이 있는 ‘무더위 쉼터’를 열고, 횡단보도에 그늘막을 세워요. 폭염 특보가 내리면 한낮에는 밖에서 하는 활동을 줄이고 물을 자주 마셔요.'],
+    ['🌙','잠 못 드는 밤, 열대야','밤사이 가장 낮은 기온이 25℃ 이상인 밤을 열대야라고 해요. 여름이 길고 더워지면서 열대야가 나타나는 날이 늘고 있어요.']
+  ],
+  quizzes:[
+    {q:'폭염 때 할머니께 알려 드릴 행동으로 가장 알맞은 것은?',o:['시원한 아침이 오기 전에, 한낮에 밭일을 서둘러 끝낸다.','가까운 무더위 쉼터에서 쉬고, 물을 자주 마신다.','물은 목이 마를 때만 조금씩 마신다.'],a:1,ex:'맞아요! 폭염 때는 한낮 활동을 피하고, 무더위 쉼터처럼 시원한 곳에서 쉬며 물을 자주 마셔야 해요.'},
+    {q:'⭕❌ 2018년 강원도 홍천의 41.0℃는 우리나라에서 관측된 가장 높은 기온이다.',o:OX,a:0,ex:'⭕ 맞아요! 우리나라에서 기온을 관측한 뒤 가장 높은 기록이에요.'},
+    {q:'‘열대야’는 어떤 밤을 말할까요?',o:['밤에 비가 많이 오는 날','밤사이 가장 낮은 기온이 25℃ 이상인 밤','밤에 바람이 세게 부는 날'],a:1,ex:'정답! 밤에도 25℃ 아래로 내려가지 않아 잠들기 힘든 밤이에요.'}
+  ],
+  field:[
+    ['n','오후 2시, 휴대 전화에 폭염 경보 문자가 울린다. 📱'],
+    ['gma','날이 덥다고 밭일을 미룰 순 없지. 지금 나가 볼까?'],
+    {id:'heat1',q:'할머니께 뭐라고 말씀드릴까?',o:[
+      {t:'지금은 가장 더울 때예요. 해가 진 저녁이나 이른 아침에 하세요!',ok:1,r:[['gma','그래, 우리 요원 말이 맞구나. 시원할 때 해야겠다.']]},
+      {t:'모자만 쓰시면 괜찮아요. 다녀오세요!',r:[['bot','잠깐! 폭염 경보 때는 모자를 써도 한낮 바깥 활동은 위험해요. 다시 생각해 봐요.']]},
+      {t:'물은 일 끝나고 돌아와서 한꺼번에 드세요.',r:[['bot','목마르기 전에 물을 자주 마셔야 해요. 다시 골라 봐요!']]}]},
+    ['sky:worry','큰일이야! 교실 에어컨이 고장 나서 친구들이 너무 더워해.'],
+    {id:'heat2',q:'친구들을 위해 무엇을 할 수 있을까?',o:[
+      {t:'창문을 닫고 운동장에서 신나게 달리기를 한다.',r:[['bot','더운 한낮에 운동하면 온열 질환 위험이 커요!']]},
+      {t:'선생님께 말씀드리고 가까운 시원한 곳(무더위 쉼터, 도서관)으로 옮긴다.',ok:1,r:[['sky:happy','좋은 생각이야! 시원한 곳에서 쉬니까 다들 괜찮아졌어.']]}]}
+  ],
+  acts:[
+    ['🏛️','지역에 에어컨이 있는 무더위 쉼터를 열어 누구나 쉬게 한다.','s','지역(시청·구청)이 시설을 마련해 많은 사람을 돕는 일이에요.'],
+    ['💧','폭염 특보가 내리면 한낮 외출을 줄이고 물을 자주 마신다.','p','나와 가족이 스스로 몸을 지키는 실천이에요.'],
+    ['🏫','학교 지붕에 태양광 패널을 설치해 햇빛으로 전기를 만든다.','s','학교와 교육청이 함께 계획하고 시설을 갖추는 일이에요.'],
+    ['💡','안 쓰는 전등과 전자 제품의 플러그를 끈다.','p','오늘 바로 내가 할 수 있는 전기 아끼기예요.']
+  ],
+  outro:[
+    ['gma','무더위 쉼터 덕분에 이 할미도 이번 여름을 시원하게 보냈단다. 고맙구나.'],
+    ['sky:happy','전기를 아끼는 사람이 많아지니까 온실가스도 줄었대!'],
+    ['bot','폭염 사건 해결! 마을 지킴 게이지가 올라갔어요.'],
+    ['me:happy','좋아, 다음 사건도 맡겨 줘!']
+  ]},
+{ key:'fire', icon:'🔥', title:'번지는 불길, 산불',
+  intro:[
+    ['n','건조한 봄바람이 부는 3월, 먼 산에서 회색 연기가 피어오른다.'],
+    ['fire','요즘은 봄마다 큰 산불이 나서 쉴 틈이 없단다.'],
+    ['fire','비가 오랫동안 안 와서 산이 바짝 말랐거든. 작은 불씨 하나에도 불이 확 번져.'],
+    ['sky:worry','산이 까맣게 타서 다람쥐도, 새들도 집을 잃었어.'],
+    ['me','산불이 왜 점점 커지는 걸까? 이유부터 알아봐야겠어.'],
+    ['bot','산불과 기후 변화는 어떤 관계가 있을까요? 자료 카드를 살펴봐요!']
+  ],
+  cards:[
+    ['🍂','기후 변화와 산불','기온이 오르고 비가 적게 오면 땅과 나뭇잎이 바싹 말라요. 그러면 작은 불씨도 큰 산불로 번지기 쉬워요.'],
+    ['🌲','우리나라의 큰 산불','2022년 3월 경북 울진·강원 삼척 산불은 213시간 동안 이어졌어요. 2025년 3월에는 경북 의성 등 영남 지역에 난 산불이 역대 가장 큰 피해를 남겼어요.'],
+    ['🔁','숲이 타면 생기는 일','숲은 온실가스인 이산화 탄소를 빨아들여요. 숲이 불에 타면 이산화 탄소가 나오고, 그것을 빨아들일 나무도 사라져 기후 변화가 더 심해져요.'],
+    ['🚭','산불은 대부분 사람의 실수로','우리나라 산불은 쓰레기나 논밭을 태우다 번지거나, 담배꽁초를 버리는 것처럼 사람의 실수로 나는 경우가 많아요. 산에 갈 때 불씨를 가져가지 않는 것이 중요해요.']
+  ],
+  quizzes:[
+    {q:'산불이 기후 변화를 더 심하게 만드는 까닭은?',o:['불이 나면 비가 많이 내리기 때문에','이산화 탄소가 나오고, 그것을 빨아들이던 나무가 사라지기 때문에','산에 사는 동물이 늘어나기 때문에'],a:1,ex:'정답! 산불 → 온실가스 증가 → 기후 변화 → 더 건조해짐 → 또 산불… 이렇게 나쁜 고리가 이어질 수 있어요.'},
+    {q:'⭕❌ 기온이 오르고 비가 적게 오면 산불이 더 쉽게 번진다.',o:OX,a:0,ex:'⭕ 맞아요! 바싹 마른 숲은 불이 잘 붙고 빠르게 번져요.'},
+    {q:'우리나라 산불이 나는 까닭으로 가장 많은 것은?',o:['번개','쓰레기 태우기, 담배꽁초 같은 사람의 실수','화산 폭발'],a:1,ex:'맞아요! 그래서 우리 모두의 작은 조심이 산불을 막을 수 있어요.'}
+  ],
+  field:[
+    ['n','산불 감시탑. 무전기에서 다급한 목소리가 들린다. 📻'],
+    ['fire','산 아래 밭에서 누군가 쓰레기를 태우고 있다는 신고야!'],
+    {id:'fire1',q:'박 대원과 함께 어떻게 할까?',o:[
+      {t:'바람이 불면 알아서 꺼질 테니 지켜본다.',r:[['fire','바람은 오히려 불을 더 크게 번지게 한단다!']]},
+      {t:'바로 119에 신고하고, 쓰레기를 태우면 안 된다고 알린다.',ok:1,r:[['fire','좋아! 작은 불씨일 때 막는 게 가장 중요하지.']]}]},
+    ['sky','주말에 가족이랑 등산 가기로 했어. 산에서 라면 끓여 먹을까?'],
+    {id:'fire2',q:'하늘이에게 뭐라고 말해 줄까?',o:[
+      {t:'산에서는 불을 피우면 안 돼. 도시락을 싸 가자!',ok:1,r:[['sky:happy','아하, 그렇구나! 김밥 싸 가야지.']]},
+      {t:'바람이 없는 곳에서 끓이면 괜찮아.',r:[['fire','산에서는 정해진 곳 말고는 불을 피우면 안 된단다. 작은 불씨도 위험해.']]}]}
+  ],
+  acts:[
+    ['🚁','드론과 감시 카메라로 산불을 빨리 찾아낸다.','s','산림청과 소방서 같은 기관이 장비를 갖춰서 하는 일이에요.'],
+    ['🚭','산에 갈 때 라이터, 성냥 같은 불씨를 가져가지 않는다.','p','등산하는 사람 한 명 한 명이 지켜야 하는 실천이에요.'],
+    ['🌳','불에 잘 타지 않는 나무를 심어 불길을 막는 숲을 만든다.','s','나라와 지역이 오랜 시간 계획을 세워 숲을 가꾸는 일이에요.'],
+    ['📄','종이와 일회용품을 아껴 쓴다.','p','물건을 만들고 버릴 때 나오는 온실가스를 내가 줄일 수 있어요.']
+  ],
+  outro:[
+    ['fire','감시 드론 덕분에 작은 불씨를 금방 찾아냈단다. 산이 다시 초록빛이 되고 있어.'],
+    ['sky:happy','다람쥐들이 돌아왔어!'],
+    ['bot','산불 사건 해결! 이번엔 바닷가 마을에서 신호가 와요.'],
+    ['me:happy','바로 출동하자!']
+  ]},
+{ key:'storm', icon:'🌀', title:'세찬 비바람, 태풍',
+  intro:[
+    ['n','하늘이 갑자기 어두워지고, 바닷바람이 거세진다.'],
+    ['fish','태풍이 올 때마다 배가 부서지고 마을이 물에 잠긴다네.'],
+    ['fish','예전엔 이렇게 센 태풍이 드물었는데, 요즘은 비도 훨씬 많이 쏟아져.'],
+    ['sky:worry','작년에는 아파트 지하 주차장에 물이 가득 차서 정말 무서웠어.'],
+    ['me','할아버지, 마을이 물에 잠기지 않게 할 방법을 찾아볼게요!'],
+    ['bot','태풍이 왜 점점 무서워지는지 조사해 봐요!']
+  ],
+  cards:[
+    ['🌀','태풍 힌남노 (2022년)','2022년 9월 태풍 힌남노 때 경북 포항에 많은 비가 내려 하천이 넘쳤어요. 아파트 지하 주차장과 큰 공장이 물에 잠기는 피해가 났어요.'],
+    ['🌊','따뜻한 바다와 태풍','태풍은 따뜻한 바다에서 수증기를 얻어 힘을 키워요. 바다가 따뜻해지면 더 강한 태풍이 생길 수 있어요.'],
+    ['🧱','태풍에 대비하는 방법','하천을 넓히고 빗물을 잠시 모아 두는 시설을 만들어요. 지하 주차장 입구에는 물막이판을 달아요.'],
+    ['📢','태풍 특보와 대피','태풍이 다가오면 기상청이 태풍 주의보·경보를 내려요. 경보가 내리면 바닷가나 하천 근처에 가지 말고, 안내에 따라 안전한 곳으로 대피해요.']
+  ],
+  quizzes:[
+    {q:'바다가 따뜻해지면 태풍은 어떻게 될 수 있나요?',o:['힘이 약해진다.','수증기를 더 많이 얻어 더 강해질 수 있다.','태풍이 아예 생기지 않는다.'],a:1,ex:'맞아요! 따뜻한 바다는 태풍에게 힘을 주는 연료와 같아요.'},
+    {q:'⭕❌ 2022년 태풍 힌남노 때 포항에서는 하천이 넘쳐 지하 주차장이 물에 잠기는 피해가 났다.',o:OX,a:0,ex:'⭕ 맞아요! 짧은 시간에 많은 비가 내리면 하천이 넘칠 수 있어요.'},
+    {q:'태풍 경보가 내렸을 때 알맞은 행동은?',o:['바닷가에 가서 큰 파도를 구경한다.','하천과 바닷가를 피하고, 안내에 따라 대피한다.','지하 주차장에 차를 옮기러 내려간다.'],a:1,ex:'정답! 태풍 경보 때는 위험한 곳에 가지 않는 것이 가장 중요해요.'}
+  ],
+  field:[
+    ['n','태풍 경보 문자가 울린다. 파도가 방파제를 넘기 시작했다. 🌊'],
+    ['fish','내 배가 걱정되는구먼. 지금 항구에 가서 배를 단단히 묶어야겠어!'],
+    {id:'storm1',q:'어부 할아버지께 뭐라고 말씀드릴까?',o:[
+      {t:'빨리 다녀오세요. 제가 따라갈게요!',r:[['bot','위험해요! 태풍 경보 때 바닷가에서는 큰 파도에 휩쓸릴 수 있어요.']]},
+      {t:'경보가 내렸을 땐 바닷가에 가면 위험해요. 배는 태풍이 오기 전에 미리 묶어 두어야 해요!',ok:1,r:[['fish','허허, 그렇지. 다음엔 태풍 소식이 들리면 미리 단단히 묶어 둬야겠구먼.']]}]},
+    ['sky:worry','큰일이야! 지하 주차장 쪽으로 빗물이 흘러 들어가고 있어!'],
+    {id:'storm2',q:'어떻게 해야 할까?',o:[
+      {t:'지하로 내려가지 않고, 어른과 관리실에 바로 알린다.',ok:1,r:[['sky:happy','관리실에서 물막이판을 바로 세웠대! 다행이야.']]},
+      {t:'물이 얼마나 찼는지 직접 내려가서 확인한다.',r:[['bot','지하 공간은 물이 순식간에 차올라 매우 위험해요!']]}]}
+  ],
+  acts:[
+    ['🏞️','하천을 넓히고 빗물을 모아 두는 시설을 만든다.','s','큰 공사가 필요해서 나라와 지역이 함께하는 일이에요.'],
+    ['📱','태풍 소식을 미리 확인하고, 가족과 대피 장소를 정해 둔다.','p','우리 집에서 직접 준비할 수 있는 일이에요.'],
+    ['🌬️','햇빛, 바람으로 전기를 만드는 재생 에너지 발전소를 늘린다.','s','나라와 기업이 함께 발전소를 짓고 바꿔 나가는 일이에요.'],
+    ['❄️','여름엔 냉방 온도를 너무 낮추지 않고, 겨울엔 난방 온도를 너무 높이지 않는다.','p','우리 집, 우리 교실에서 바로 할 수 있는 에너지 아끼기예요.']
+  ],
+  outro:[
+    ['fish','빗물 저장 시설 덕분에 이번 태풍엔 마을이 잠기지 않았다네!'],
+    ['sky:happy','휴, 다행이다. 그런데 요즘 사과가 너무 비싸…'],
+    ['bot','태풍 사건 해결! 다음은 과수원으로 가 봐요.'],
+    ['me:happy','과수원 이모를 만나러 가자!']
+  ]},
+{ key:'food', icon:'🍎', title:'사라지는 사과, 식량',
+  intro:[
+    ['n','가을인데도 과수원의 나뭇잎이 누렇게 말라 있다. 🍂'],
+    ['farm','우리 과수원에서 이제 사과가 잘 안 열려. 너무 더워서 그런가 봐.'],
+    ['farm','여름 햇볕이 너무 뜨거워서 사과 껍질이 데어 버리기도 해.'],
+    ['sky:worry','사과값이 너무 비싸서 생일에만 먹을 수 있어.'],
+    ['me','날씨가 바뀌면 우리가 먹는 음식도 바뀌는구나…'],
+    ['bot','기후 변화가 우리 밥상을 어떻게 바꾸는지 알아봐요!']
+  ],
+  cards:[
+    ['🍎','바뀌는 사과 농사 지도','예전에는 대구·경북이 대표적인 사과 산지였어요. 날씨가 따뜻해지면서 사과를 기르는 곳이 강원도(정선, 양구 등) 쪽으로 점점 북쪽으로 옮겨 가고 있어요.'],
+    ['🥭','새로운 과일이 자라요','따뜻한 나라에서 자라던 망고, 바나나 같은 과일을 이제 제주도와 남부 지역 등에서 기르기도 해요.'],
+    ['📉','이상 기후와 밥상','갑작스러운 폭염, 가뭄, 큰비가 오면 농작물을 거두는 양이 줄어요. 먹을거리가 부족해지면 값이 오르고 우리 밥상이 위협받아요.'],
+    ['🌾','바다 건너 오는 먹을거리','우리나라는 밀, 옥수수, 콩 같은 곡물의 많은 양을 다른 나라에서 사 와요. 다른 나라에 가뭄이나 홍수가 나면 우리 밥상에도 영향을 줄 수 있어요.']
+  ],
+  quizzes:[
+    {q:'사과를 기르는 지역이 북쪽으로 옮겨 가는 까닭은?',o:['사람들이 사과를 싫어하게 되어서','날씨가 따뜻해져서','강원도에 사과 가게가 많아서'],a:1,ex:'정답! 사과는 서늘한 곳에서 잘 자라요. 날씨가 따뜻해지자 더 서늘한 북쪽으로 농사 지역이 옮겨 가고 있어요.'},
+    {q:'⭕❌ 날씨가 따뜻해지면서 제주도와 남부 지역에서 망고 같은 열대 과일을 기르기도 한다.',o:OX,a:0,ex:'⭕ 맞아요! 기후가 바뀌면 기를 수 있는 작물도 바뀌어요.'},
+    {q:'다른 나라에 큰 가뭄이 나면 우리 생활에 어떤 일이 생길 수 있을까?',o:['아무 일도 생기지 않는다.','사 오는 곡물이 줄어 음식값이 오를 수 있다.','우리나라에 비가 많이 온다.'],a:1,ex:'맞아요! 기후 변화는 전 세계가 함께 겪는 문제예요.'}
+  ],
+  field:[
+    ['farm','올여름도 엄청 덥대. 사과나무를 어떻게 지키면 좋을까?'],
+    {id:'food1',q:'과수원 이모에게 어떤 방법을 알려 줄까?',o:[
+      {t:'사과 농사를 그만두고 아무것도 심지 않는다.',r:[['bot','포기하기보다 바뀐 날씨에 맞춰 대비하는 방법을 찾아봐요!']]},
+      {t:'더위에 강한 새 품종을 심고, 그늘막과 물 주기 시설을 갖춘다.',ok:1,r:[['farm','좋은 생각이야! 바로 준비해 볼게.']]}]},
+    ['n','점심시간, 학교 급식실. 🍱'],
+    ['sky','오늘 반찬이 별로야. 그냥 많이 받아서 남길래.'],
+    {id:'food2',q:'하늘이에게 뭐라고 말할까?',o:[
+      {t:'먹을 만큼만 받자. 버린 음식이 썩을 때도 온실가스가 나온대!',ok:1,r:[['sky:happy','정말? 그럼 조금만 받아서 다 먹을게!']]},
+      {t:'남겨도 괜찮아. 어차피 버리면 되니까.',r:[['bot','음식물 쓰레기가 썩을 때도 온실가스가 나와요. 다시 생각해 봐요!']]}]}
+  ],
+  acts:[
+    ['🧬','더위에 강한 새로운 농작물 품종을 연구하고 개발한다.','s','농업 연구 기관과 나라가 오랜 시간 연구하는 일이에요.'],
+    ['🍽️','급식이나 밥을 먹을 만큼만 담아 남기지 않는다.','p','버려진 음식이 썩을 때 나오는 온실가스를 내가 줄일 수 있어요.'],
+    ['🏪','학교 급식에 우리 지역에서 난 농산물을 쓰도록 한다.','s','학교와 지역이 함께 정해서 하는 일이에요.'],
+    ['🥕','장을 볼 때 가까운 지역에서 난 농산물을 고른다.','p','우리 가족이 고를 수 있는 실천이에요. 멀리서 실어 오는 연료를 아낄 수 있어요.']
+  ],
+  outro:[
+    ['farm','더위에 강한 새 사과가 주렁주렁 열렸어! 생일이 아니어도 먹을 수 있겠다.'],
+    ['sky:happy','야호!'],
+    ['bot','식량 사건 해결! 그런데 바닷속에서 이상한 신호가 잡혀요.'],
+    ['me','바닷속? 해녀 할머니께 가 보자!']
+  ]},
+{ key:'sea', icon:'🐟', title:'뜨거워진 바다, 바다 생태계',
+  intro:[
+    ['n','제주 바닷가. 해녀 할머니가 물질을 마치고 올라온다. 🌊'],
+    ['diver','바닷속에 들어가 보면 미역, 다시마 숲이 사라지고 바위가 하얗게 변했단다.'],
+    ['diver','전복이랑 소라도 예전보다 훨씬 줄었어.'],
+    ['sky:worry','할아버지가 좋아하시던 명태는 이제 우리 바다에서 거의 잡히지 않는대.'],
+    ['me','바닷물이 따뜻해지면 바닷속 생물에게 무슨 일이 생기는 걸까?'],
+    ['bot','바다 수온이 오르면 어떤 일이 생기는지 조사해 봐요!']
+  ],
+  cards:[
+    ['🌡️','빨리 따뜻해지는 우리 바다','우리나라 바다의 표면 온도는 1968년부터 2023년까지 약 1.4℃ 올랐어요. 세계 바다 평균보다 2배 넘게 빠르게 오른 거예요.'],
+    ['🐟','바뀌는 물고기','차가운 물을 좋아하는 명태는 우리 바다에서 거의 사라졌어요. 대신 따뜻한 바다에 사는 물고기가 점점 늘고 있어요.'],
+    ['🪨','바다 사막화(갯녹음)','바닷속 해조류 숲이 사라지고 바위가 하얗게 변하는 현상이에요. 해조류를 먹고 그 숲에 숨어 살던 물고기와 조개도 살 곳을 잃어요.'],
+    ['🪸','하얗게 변하는 산호','바닷물 온도가 너무 높아지면 산호가 하얗게 변해요(백화 현상). 이 상태가 오래 이어지면 산호가 죽고, 산호에 기대어 살던 물고기들도 살 곳을 잃어요.']
+  ],
+  quizzes:[
+    {q:'바닷물이 따뜻해지면 생기는 일로 알맞은 것은?',o:['명태처럼 차가운 물을 좋아하는 물고기가 줄어든다.','모든 물고기가 많아진다.','바닷속 해조류 숲이 더 울창해진다.'],a:0,ex:'맞아요! 물고기마다 좋아하는 수온이 달라서, 바다가 따뜻해지면 사는 물고기의 종류가 바뀌어요.'},
+    {q:'⭕❌ 우리나라 바다의 수온은 세계 바다 평균보다 느리게 오르고 있다.',o:OX,a:1,ex:'❌ 아니에요! 우리 바다는 세계 평균보다 2배 넘게 빠르게 따뜻해지고 있어요.'},
+    {q:'‘바다 사막화(갯녹음)’란 무엇일까요?',o:['바다가 모래로 덮여 사막이 되는 것','해조류 숲이 사라지고 바위가 하얗게 변하는 것','바닷물이 모두 말라 버리는 것'],a:1,ex:'정답! 바닷속 숲이 사라지면 그곳에 기대어 살던 생물들도 위험해져요.'}
+  ],
+  field:[
+    ['diver','양식장 물 온도가 계속 올라가고 있어. 물고기들이 힘들어하는구나.'],
+    {id:'sea1',q:'해녀 할머니께 어떤 방법을 알려 드릴까?',o:[
+      {t:'물고기가 더우니까 바다에 얼음을 잔뜩 넣어요.',r:[['bot','넓은 바다를 얼음으로 식히는 건 불가능해요. 다른 방법을 찾아봐요!']]},
+      {t:'수온 알림 서비스를 받아서, 수온이 오르기 전에 미리 대비해요!',ok:1,r:[['diver','미리 알면 물고기를 옮기거나 먹이를 조절할 수 있겠구나. 고맙다!']]}]},
+    ['n','바닷가 산책길. 🏖️'],
+    ['sky','음료수 다 마셨다! 플라스틱 컵은 그냥 모래밭에 두고 갈까?'],
+    {id:'sea2',q:'어떻게 할까?',o:[
+      {t:'가져가서 분리배출하고, 다음엔 텀블러를 쓰자!',ok:1,r:[['sky:happy','좋아! 다음엔 내 텀블러를 챙겨 올게.']]},
+      {t:'파도가 쓸어 갈 테니 괜찮아.',r:[['diver','바다로 간 쓰레기는 바다 생물을 아프게 한단다.']]}]}
+  ],
+  acts:[
+    ['📲','수온이 오르면 양식장에 미리 알려 주는 알림 서비스를 운영한다.','s','바다를 관리하는 기관이 정보를 모아 알려 주는 일이에요.'],
+    ['🥤','텀블러와 장바구니를 쓴다.','p','일회용품을 덜 쓰는 것은 내가 바로 할 수 있어요.'],
+    ['🌿','사라진 해조류 숲을 되살리는 ‘바다숲’을 만든다.','s','나라와 지역 어민들이 함께 바다를 가꾸는 일이에요.'],
+    ['🏖️','바닷가에 놀러 가면 쓰레기를 모두 되가져온다.','p','바다를 찾는 사람 한 명 한 명이 지키는 실천이에요.']
+  ],
+  outro:[
+    ['diver','수온 알림 덕분에 양식장 물고기를 지켜 냈단다. 바닷속도 조금씩 되살아나고 있어.'],
+    ['sky:worry','이제 마지막 사건이야. 동물 친구들이 위험하대!'],
+    ['me','걱정 마, 하늘아. 마지막까지 함께할게!']
+  ]},
+{ key:'animal', icon:'🐻‍❄️', title:'사라지는 친구들, 멸종 위기 동물',
+  intro:[
+    ['n','생태 연구소. 모니터에 빨간 경고 표시가 깜빡인다. 🚨'],
+    ['dr','기후 변화에 적응하지 못한 동물들이 하나둘 사라지고 있어.'],
+    ['dr','동물마다 살기 좋은 온도와 먹이가 정해져 있는데, 환경이 너무 빨리 바뀌고 있거든.'],
+    ['sky:worry','책에서만 보던 북극곰을 영영 볼 수 없게 될까 봐 걱정돼.'],
+    ['me','마지막 사건이야. 동물 친구들을 꼭 지켜 줄게!'],
+    ['bot','동물들이 왜 위험해졌는지 마지막 조사를 시작해요!']
+  ],
+  cards:[
+    ['🐻‍❄️','북극곰과 녹는 얼음','북극곰은 바다 얼음 위에서 물범을 사냥해요. 기온이 올라 얼음이 녹아 줄어들면 먹이를 구하기 어려워져요.'],
+    ['🐝','사라진 꿀벌','2022년 초, 우리나라 곳곳에서 겨울을 나던 꿀벌이 무더기로 사라졌어요. 이상 기후가 중요한 원인 중 하나로 꼽혀요. 꿀벌이 없으면 꽃가루받이가 안 되어 과일과 채소도 줄어요.'],
+    ['🌸','엇갈리는 시간표','봄이 빨리 와서 꽃이 일찍 피면, 꽃을 찾아오는 곤충이나 새끼를 키우는 새와 시기가 어긋나요. 먹이를 구하지 못한 동물은 살아남기 어려워요.'],
+    ['🦋','북쪽으로 이사 가는 생물','날씨가 따뜻해지면서 남쪽에 살던 나비, 새, 식물이 점점 북쪽으로 사는 곳을 넓히고 있어요. 하지만 빨리 옮겨 가지 못하는 생물은 살아남기 어려워요.']
+  ],
+  quizzes:[
+    {q:'꿀벌이 사라지면 우리 생활에 어떤 일이 생길까요?',o:['과일과 채소가 줄어든다.','꿀만 없어지고 다른 변화는 없다.','꽃이 더 많이 핀다.'],a:0,ex:'정답! 꿀벌은 꽃가루를 옮겨 열매가 맺히게 도와요. 동물이 사라지면 사람의 생활에도 영향을 줘요.'},
+    {q:'⭕❌ 북극의 바다 얼음이 녹으면 북극곰이 먹이를 구하기 쉬워진다.',o:OX,a:1,ex:'❌ 아니에요! 북극곰은 얼음 위에서 사냥하기 때문에 얼음이 줄면 먹이를 구하기 어려워요.'},
+    {q:'봄이 빨리 와서 꽃이 일찍 피면 어떤 문제가 생길 수 있을까?',o:['곤충과 새가 먹이를 찾는 시기와 어긋난다.','모든 동물이 더 건강해진다.','아무 변화도 없다.'],a:0,ex:'맞아요! 자연의 시간표가 어긋나면 먹이를 구하지 못하는 동물이 생겨요.'}
+  ],
+  field:[
+    ['dr','학교 화단을 꿀벌을 위한 정원으로 바꾸려고 해. 무엇을 심으면 좋을까?'],
+    {id:'animal1',q:'윤 박사님께 어떤 생각을 말씀드릴까?',o:[
+      {t:'계절마다 꽃이 피도록 여러 가지 꽃과 나무를 심어요.',ok:1,r:[['dr','훌륭해! 꿀벌이 1년 내내 먹이를 찾을 수 있겠구나.']]},
+      {t:'관리가 쉽게 가짜 꽃(조화)을 꽂아 둬요.',r:[['bot','가짜 꽃에는 꿀과 꽃가루가 없어요!']]}]},
+    ['sky:worry','산 밑에 새 도로가 생겨서 고라니들이 길을 건너다 다친대.'],
+    {id:'animal2',q:'어떤 방법이 좋을까?',o:[
+      {t:'고라니가 못 오게 산을 모두 울타리로 막아요.',r:[['dr','동물도 먹이와 짝을 찾아 옮겨 다녀야 한단다. 다른 방법을 생각해 볼까?']]},
+      {t:'동물이 안전하게 건널 수 있는 생태 통로를 만들어요.',ok:1,r:[['dr','바로 그거야! 동물도 사람도 안전해질 거야.']]}]}
+  ],
+  acts:[
+    ['🦌','동물이 안전하게 옮겨 다닐 생태 통로와 보호 구역을 만든다.','s','나라와 지역이 길과 땅을 계획해서 하는 일이에요.'],
+    ['🥗','일주일에 하루, 고기 대신 채소를 많이 먹는 날을 정한다.','p','우리 가족이 정해서 실천할 수 있어요. 가축을 기를 때도 온실가스가 많이 나와요.'],
+    ['🔬','멸종 위기 동물을 보호하고 다시 늘리는 연구를 한다.','s','연구소와 나라가 전문가와 함께 하는 일이에요.'],
+    ['♻️','분리배출을 꼼꼼하게 해서 재활용을 돕는다.','p','집과 교실에서 내가 바로 할 수 있는 실천이에요.']
+  ],
+  outro:[
+    ['dr','꽃밭에 꿀벌들이 다시 날아들고 있어. 정말 고맙구나.'],
+    ['bot','6개의 사건을 모두 해결했어요! 마지막 관문, 최종 점검 퀴즈만 남았어요.'],
+    ['me','좋아, 지금까지 배운 걸 모두 보여 줄게!']
+  ]}
+];
+
+/* 최종 점검 퀴즈 */
+const FINAL=[
+  {q:'다음 중 ‘🙋 개인이 할 수 있는 일’은?',o:['무더위 쉼터 운영하기','안 쓰는 플러그 뽑기','하천 넓히기'],a:1,ex:'플러그 뽑기는 오늘 바로 내가 할 수 있는 실천이에요.'},
+  {q:'다음 중 ‘🏛️ 사회가 할 수 있는 일’은?',o:['텀블러 쓰기','분리배출하기','재생 에너지 발전소 늘리기'],a:2,ex:'발전소처럼 큰 시설은 나라와 기업이 함께 만들어요.'},
+  {q:'기후 변화의 가장 큰 원인으로 알맞은 것은?',o:['공기 중에 온실가스가 늘어난 것','달이 지구에 가까워진 것','바닷물이 짜진 것'],a:0,ex:'석탄·석유를 태울 때 나오는 온실가스가 지구를 점점 따뜻하게 만들어요.'},
+  {q:'숲이 기후 변화를 막는 데 도움이 되는 까닭은?',o:['태풍을 만들어 주어서','이산화 탄소를 빨아들여서','바닷물 온도를 높여서'],a:1,ex:'그래서 숲을 지키고 나무를 가꾸는 일이 중요해요.'},
+  {q:'음식물 쓰레기를 줄이면 기후 변화 대응에 도움이 되는 까닭은?',o:['쓰레기통이 가벼워져서','음식물이 썩을 때 나오는 온실가스가 줄어서','비가 많이 와서'],a:1,ex:'먹을 만큼만 담는 것도 훌륭한 줄이기 실천이에요.'},
+  {q:'⭕❌ 기후 변화 대응은 나라와 어른들만 할 수 있다.',o:OX,a:1,ex:'❌ 아니에요! 전기 아끼기, 분리배출처럼 어린이도 할 수 있는 일이 많아요.'},
+  {q:'⭕❌ 개인의 실천과 사회의 노력은 둘 중 하나만 있으면 충분하다.',o:OX,a:1,ex:'❌ 아니에요! 개인의 실천과 사회의 노력이 함께할 때 기후 변화에 더 잘 대응할 수 있어요.'}
+];
+
+/* ================= 상태 ================= */
+const S = {name:'',ch:0,notes:{},quizFirst:{},fieldFirst:{},finalFirst:{},cls:{},promise:null};
+const SAVE='climate-novel-2050';
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(SAVE)||'null')}catch(e){return null}}
+function clearSave(){try{localStorage.removeItem(SAVE)}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fill=t=>t.replace(/\{name\}/g,S.name);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+
+/* ================= 게이지 ================= */
+function scores(){
+  const cnt=o=>Object.values(o||{}).filter(Boolean).length;
+  const cls=CH.reduce((t,c)=>t+(S.cls[c.key]||0),0);
+  return {cls,quiz:cnt(S.quizFirst),field:cnt(S.fieldFirst),fin:cnt(S.finalFirst),
+    clsT:CH.length*4,quizT:CH.reduce((t,c)=>t+c.quizzes.length,0),fieldT:CH.reduce((t,c)=>t+c.field.filter(x=>x.id).length,0),finT:FINAL.length};
+}
+function gauge(){
+  const s=scores();
+  const pct=Math.round((s.cls+s.quiz+s.field+s.fin)/(s.clsT+s.quizT+s.fieldT+s.finT)*100);
+  $('gaugeFill').style.width=pct+'%';$('gaugeTxt').textContent='마을 '+pct+'%';
+  return pct;
+}
+function dots(cur){
+  $('chapDots').innerHTML=CH.map((c,i)=>`<div class="dot ${i===cur?'on':''} ${i<cur||S.cls[c.key]!==undefined&&i!==cur?'done':''}" title="${c.title}">${c.icon}</div>`).join('');
+}
+
+/* ================= 장면 ================= */
+/* ================= 배경음악 (Web Audio로 직접 합성 — 음원 파일·저작권 없음) ================= */
+const BGM=(()=>{
+  let ctx=null,master=null,musicBus=null,delayIn=null,cur=null,timer=null,muted=false,step=0,nextT=0,noiseNode=null,noiseBuf=null;
+  try{muted=localStorage.getItem('cn-mute')==='1'}catch(e){}
+  const hz=m=>440*Math.pow(2,(m-69)/12);
+  const T={
+    prologue:{bpm:68,spc:16,ch:[{r:41,n:[53,57,60,64]},{r:40,n:[52,55,59,62]},{r:38,n:[50,53,57,60]},{r:36,n:[48,52,55,59]}],arp:{w:'sine',p:[0,2,4,6,7,6,4,2],o:12,v:.07,d:.9},pad:{v:.035,c:900},bass:{v:.10,s:[0]},bell:.15},
+    heat:{bpm:70,spc:16,ch:[{r:33,n:[45,48,52,55]},{r:29,n:[45,48,52,53]},{r:38,n:[45,48,50,53]},{r:40,n:[44,47,52,54]}],arp:{w:'sine',p:[0,2,1,3,0,2,4,2],o:12,v:.05,d:.8},pad:{v:.035,c:700},bass:{v:.10,s:[0]},noise:{k:'cicada',v:.018},bell:.04},
+    fire:{bpm:84,spc:8,ch:[{r:33,n:[45,48,52,57]},{r:29,n:[45,48,53,57]},{r:38,n:[45,50,53,57]},{r:40,n:[44,47,52,56]}],arp:{w:'triangle',p:[0,1,2,1,0,1,3,1],o:0,v:.06,d:.25},pad:{v:.035,c:700},bass:{v:.13,s:[0,2,4,6]},bell:0},
+    storm:{bpm:74,spc:8,ch:[{r:38,n:[50,53,57,62]},{r:34,n:[46,50,53,58]},{r:31,n:[43,46,50,55]},{r:33,n:[45,49,52,57]}],arp:{w:'sine',p:[0,2,1,3,0,2,1,3],o:0,v:.05,d:.4},pad:{v:.04,c:600},bass:{v:.13,s:[0,3,6]},noise:{k:'rain',v:.05},bell:0},
+    food:{bpm:72,spc:8,ch:[{r:40,n:[47,52,55,59]},{r:36,n:[48,52,55,59]},{r:31,n:[47,50,55,59]},{r:38,n:[45,50,54,57]}],arp:{w:'triangle',p:[0,2,4,2,5,3,1,2],o:12,v:.05,d:.6},pad:{v:.032,c:850},bass:{v:.09,s:[0]},noise:{k:'wind',v:.015},bell:.04},
+    sea:{bpm:64,spc:16,ch:[{r:39,n:[51,55,58,62]},{r:36,n:[48,51,55,58]},{r:32,n:[44,48,51,55]},{r:34,n:[46,50,53,58]}],arp:{w:'sine',p:[0,4,2,6,1,5,3,7],o:12,v:.06,d:1.2},pad:{v:.04,c:800},bass:{v:.09,s:[0]},noise:{k:'wave',v:.06},bell:.1},
+    animal:{bpm:72,spc:8,ch:[{r:33,n:[45,48,52,57]},{r:31,n:[47,50,55,59]},{r:29,n:[45,48,53,57]},{r:36,n:[48,52,55,60]}],arp:{w:'sine',p:[4,6,5,7,4,6,5,3],o:24,v:.045,d:.6},pad:{v:.03,c:900},bass:{v:.09,s:[0]},noise:{k:'wind',v:.025},bell:.12},
+    lab:{bpm:88,spc:8,g:.75,ch:[{r:36,n:[48,52,55,59]},{r:33,n:[45,48,52,55]},{r:38,n:[50,53,57,60]},{r:31,n:[47,50,53,55]}],arp:{w:'sine',p:[0,2,4,2,1,3,5,3],o:12,v:.05,d:.22},pad:{v:.02,c:1000},bass:{v:.08,s:[0,4]},bell:.1},
+    alert:{bpm:126,spc:8,ch:[{r:38,n:[50,53,57,62]},{r:34,n:[50,53,58,62]},{r:36,n:[48,52,55,60]},{r:33,n:[49,52,57,61]}],arp:{w:'triangle',p:[0,4,0,4,1,5,2,6],o:12,v:.055,d:.14},pad:{v:.03,c:1000},bass:{v:.12,s:[0,1,2,3,4,5,6,7]},bell:0},
+    solved:{bpm:100,spc:8,ch:[{r:41,n:[53,57,60,65]},{r:40,n:[52,55,60,64]},{r:38,n:[50,53,57,62]},{r:34,n:[50,53,58,62]}],arp:{w:'triangle',p:[0,2,4,6,7,6,4,2],o:12,v:.06,d:.4},pad:{v:.03,c:1500},bass:{v:.11,s:[0,3,4]},bell:.22},
+    final:{bpm:104,spc:8,g:.85,ch:[{r:33,n:[45,48,52,57]},{r:29,n:[45,48,53,57]},{r:36,n:[48,52,55,60]},{r:31,n:[47,50,55,59]}],arp:{w:'triangle',p:[0,4,2,4,1,4,3,5],o:12,v:.05,d:.2},pad:{v:.025,c:1200},bass:{v:.11,s:[0,2,4,6]},bell:.06},
+    tearful:{bpm:58,spc:8,ch:[{r:36,n:[48,52,55,60]},{r:35,n:[47,50,55,59]},{r:33,n:[45,48,52,57]},{r:29,n:[45,48,53,57]}],arp:{w:'sine',p:[0,2,4,6,5,4,2,1],o:12,v:.045,d:1.6},pad:{v:.035,c:850},bass:{v:.09,s:[0]},bell:.16,
+      mel:[76,-1,-1,-1,79,-1,77,-1, 74,-1,-1,-1,-1,-1,71,-1, 72,-1,-1,74,76,-1,-1,-1, 77,-1,76,-1,72,-1,-1,-1],mv:.05,ml:3.2},
+    credits:{bpm:80,spc:8,ch:[{r:36,n:[48,52,55,60]},{r:31,n:[47,50,55,59]},{r:33,n:[45,48,52,57]},{r:29,n:[45,48,53,57]},{r:36,n:[48,52,55,60]},{r:31,n:[47,50,55,59]},{r:29,n:[45,48,53,57]},{r:31,n:[47,50,53,55]}],arp:{w:'sine',p:[0,2,4,2,5,2,4,2],o:12,v:.04,d:.9},pad:{v:.032,c:1200},bass:{v:.10,s:[0,4]},bell:.12,
+      mel:[72,-1,76,-1,79,-1,77,76, 74,-1,-1,71,74,-1,79,-1, 76,-1,72,-1,74,76,77,-1, 76,-1,74,-1,72,-1,-1,-1, 72,-1,76,-1,79,-1,81,79, 74,-1,-1,71,74,-1,77,-1, 77,-1,76,-1,74,-1,72,74, 72,-1,-1,-1,-1,-1,-1,-1],mv:.065,ml:2.4},
+    ending:{bpm:108,spc:8,ch:[{r:36,n:[48,52,55,60]},{r:31,n:[47,50,55,59]},{r:33,n:[45,48,52,57]},{r:29,n:[45,48,53,57]}],arp:{w:'triangle',p:[0,2,4,7,6,4,5,3],o:12,v:.065,d:.3},pad:{v:.03,c:1600},bass:{v:.12,s:[0,3,4,6]},bell:.2}
+  };
+  function init(){
+    if(ctx)return;
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    ctx=new AC();master=ctx.createGain();master.gain.value=muted?0:.8;master.connect(ctx.destination);
+    musicBus=ctx.createGain();musicBus.gain.value=0;musicBus.connect(master);
+    // 잔향 느낌의 딜레이
+    delayIn=ctx.createGain();const dl=ctx.createDelay(1);dl.delayTime.value=.33;const fb=ctx.createGain();fb.gain.value=.32;const lp=ctx.createBiquadFilter();lp.frequency.value=2200;
+    delayIn.connect(dl);dl.connect(lp);lp.connect(fb);fb.connect(dl);lp.connect(musicBus);
+    noiseBuf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }
+  function note(t,m,dur,w,v,dest,att){
+    const o=ctx.createOscillator(),g=ctx.createGain();o.type=w;o.frequency.value=hz(m);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+(att||.01));g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(dest);o.start(t);o.stop(t+dur+.05);return g;
+  }
+  function pad(t,ch,dur,th){
+    const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=th.pad.c;f.connect(musicBus);
+    ch.n.forEach(m=>[-6,6].forEach(det=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();o.type='sawtooth';o.frequency.value=hz(m);o.detune.value=det;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(th.pad.v/2,t+dur*.35);g.gain.linearRampToValueAtTime(0,t+dur+.4);
+      o.connect(g);g.connect(f);o.start(t);o.stop(t+dur+.5);
+    }));
+  }
+  function startNoise(n){
+    stopNoise();if(!n)return;
+    const s=ctx.createBufferSource();s.buffer=noiseBuf;s.loop=true;
+    const f=ctx.createBiquadFilter(),g=ctx.createGain();
+    if(n.k==='rain'){f.type='highpass';f.frequency.value=2500;g.gain.value=n.v}
+    else if(n.k==='cicada'){f.type='bandpass';f.frequency.value=5200;f.Q.value=6;g.gain.value=n.v;
+      const l=ctx.createOscillator(),lg=ctx.createGain();l.frequency.value=38;lg.gain.value=n.v*.9;l.connect(lg);lg.connect(g.gain);l.start();s._lfo=l}
+    else{f.type='lowpass';f.frequency.value=n.k==='wave'?600:900;g.gain.value=n.v*.6;
+      const l=ctx.createOscillator(),lg=ctx.createGain();l.frequency.value=n.k==='wave'?.12:.07;lg.gain.value=n.v*.5;l.connect(lg);lg.connect(g.gain);l.start();s._lfo=l}
+    s.connect(f);f.connect(g);g.connect(musicBus);s.start();noiseNode=s;
+  }
+  function stopNoise(){if(noiseNode){try{noiseNode.stop();noiseNode._lfo&&noiseNode._lfo.stop()}catch(e){}noiseNode=null}}
+  function tick(){
+    if(!cur)return;const th=T[cur],sd=60/th.bpm/2;
+    while(nextT<ctx.currentTime+.25){
+      const ci=Math.floor(step/th.spc)%th.ch.length,ch=th.ch[ci],pos=step%th.spc,inBar=step%8;
+      if(pos===0)pad(nextT,ch,sd*th.spc,th);
+      if(th.bass.s.includes(inBar))note(nextT,ch.r,sd*2.2,'sine',th.bass.v,musicBus,.02);
+      const ext=ch.n.concat(ch.n.map(m=>m+12));const m=ext[th.arp.p[inBar]%ext.length]+th.arp.o;
+      const g=note(nextT,m,th.arp.d,th.arp.w,th.arp.v,musicBus);g.connect(delayIn);
+      if(th.bell&&Math.random()<th.bell&&inBar%2===0)note(nextT+sd*.5,ch.n[Math.floor(Math.random()*ch.n.length)]+24,1.6,'sine',.025,delayIn);
+      if(th.mel){const mm=th.mel[step%th.mel.length];if(mm>0){const g2=note(nextT,mm,sd*(th.ml||2.2),'triangle',th.mv||.06,musicBus,.03);g2.connect(delayIn)}}
+      step++;nextT+=sd;
+    }
+  }
+  function play(k){
+    init();if(!ctx||!T[k]||cur===k)return;
+    if(ctx.state==='suspended')ctx.resume();
+    const now=ctx.currentTime;musicBus.gain.cancelScheduledValues(now);musicBus.gain.setValueAtTime(musicBus.gain.value,now);musicBus.gain.linearRampToValueAtTime(0,now+.6);
+    setTimeout(()=>{cur=k;step=0;nextT=ctx.currentTime+.05;startNoise(T[k].noise);
+      const n=ctx.currentTime;musicBus.gain.setValueAtTime(0,n);musicBus.gain.linearRampToValueAtTime(T[k].g||1,n+1.5)},650);
+    if(!timer)timer=setInterval(tick,60);
+  }
+  function sfx(kind){
+    if(!ctx||muted)return;const t=ctx.currentTime;
+    if(kind==='ok'){note(t,76,.25,'sine',.12,master);note(t+.1,83,.4,'sine',.12,master)}
+    else if(kind==='no'){note(t,52,.25,'triangle',.08,master);note(t+.08,50,.3,'triangle',.08,master)}
+    else if(kind==='card'){note(t,88,.12,'sine',.06,master)}
+    else if(kind==='alert'){[0,1,2,3].forEach(i=>note(t+i*.16,i%2?76:81,.15,'triangle',.07,master))}
+    else if(kind==='fanfare'){[60,64,67].forEach((m,i)=>note(t+i*.11,m+12,.35,'triangle',.08,master));[60,64,67,72].forEach(m=>note(t+.38,m+12,1.3,'triangle',.05,master,.02))}
+    else if(kind==='choice'){note(t,67,.3,'sine',.06,master);note(t+.12,74,.5,'sine',.06,master)}
+    else if(kind==='chime'){[72,76,79,84].forEach((m,i)=>note(t+i*.09,m,.9,'sine',.06,master))}
+  }
+  function toggle(){muted=!muted;try{localStorage.setItem('cn-mute',muted?'1':'0')}catch(e){}
+    if(ctx){const n=ctx.currentTime;master.gain.cancelScheduledValues(n);master.gain.setValueAtTime(master.gain.value,n);master.gain.linearRampToValueAtTime(muted?0:.8,n+.3);if(!muted&&ctx.state==='suspended')ctx.resume()}
+    return muted}
+  function stop(){if(!ctx)return;const n=ctx.currentTime;musicBus.gain.cancelScheduledValues(n);musicBus.gain.setValueAtTime(musicBus.gain.value,n);musicBus.gain.linearRampToValueAtTime(0,n+.8);setTimeout(()=>{cur=null;stopNoise()},850)}
+  return {init,play,sfx,toggle,stop,isMuted:()=>muted};
+})();
+
+/* ================= 캐릭터 움직임 엔진 =================
+   그림을 촘촘한 그물망으로 나눠 부위별로 변형합니다.
+   숨쉬기(어깨·가슴) · 고개 기울이기 · 말할 때 끄덕임 · 머리카락 바람결 · 몸 흔들림 · 감정 표현 */
+const RIGCFG={ // neck: 턱 위치(그림 위에서부터 비율), chest: 가슴 아래 위치
+  agent_boy:{neck:.28,chest:.48},agent_girl:{neck:.31,chest:.5},sky:{neck:.2,chest:.36},bot:{neck:.5,chest:.75,bot:1},
+  gma:{neck:.27,chest:.47},fire:{neck:.23,chest:.43},fish:{neck:.25,chest:.45},farm:{neck:.27,chest:.47},diver:{neck:.3,chest:.5},dr:{neck:.23,chest:.43}};
+function rigCfg(key){const b=key.replace(/_(happy|worry)$/,'');return RIGCFG[b]||{neck:.25,chest:.45}}
+function makeRig(canvas){
+  let gl;try{gl=canvas.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:true})}catch(e){}
+  if(!gl)return null;
+  let lost=false;
+  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;canvas.dispatchEvent(new Event('riglost'))});
+  const VS=`attribute vec2 aUV;
+uniform float uT,uTalk,uMood,uNeck,uChest,uSeed,uAsp,uPad,uBot,uAmp;
+varying vec2 vUV;
+vec2 rot(vec2 p,vec2 c,float a){vec2 d=p-c;d.x*=uAsp;float s=sin(a),k=cos(a);d=vec2(k*d.x-s*d.y,s*d.x+k*d.y);d.x/=uAsp;return c+d;}
+void main(){
+  vUV=aUV;vec2 u=aUV;vec2 p=aUV;float t=uT+uSeed;
+  float happy=max(uMood,0.0),worry=max(-uMood,0.0);
+  float headW=1.0-smoothstep(uNeck-0.035,uNeck+0.06,u.y);
+  float chestW=smoothstep(uNeck-0.06,uNeck+0.03,u.y)*(1.0-smoothstep(uChest,uChest+0.22,u.y));
+  float topW=pow(max(0.0,1.0-u.y/max(uNeck,0.05)),1.6);
+  float br=0.5+0.5*sin(t*(1.6+0.9*worry+0.4*happy));
+  /* 숨쉬기 */
+  p.y-=uAmp*0.0060*br*(chestW+headW);
+  p.x+=(u.x-0.5)*uAmp*0.016*br*chestW;
+  /* 고개: 천천히 기울이기 + 기쁠 때 리듬 + 걱정할 때 숙이고 떨기 */
+  float tilt=0.020*sin(t*0.75)+0.009*sin(t*1.9+1.3)+happy*0.018*sin(t*3.4)-worry*0.025;
+  vec2 piv=vec2(0.5,uNeck+0.03);
+  p=mix(p,rot(p,piv,tilt*uAmp),headW);
+  p.y+=headW*uAmp*(uTalk*0.0095*abs(sin(t*8.0))+worry*0.010);
+  p.x+=headW*worry*0.0022*sin(t*15.0);
+  /* 머리카락·모자·새싹 바람결 (위로 갈수록 크게, 물결처럼 시차) */
+  float wav=sin(t*1.45-u.y*8.0+u.x*2.5)+0.4*sin(t*2.7-u.y*13.0);
+  p.x+=uAmp*(0.0065+0.010*uBot)*topW*wav;
+  /* 바깥쪽 가장자리(팔·옷자락)는 살짝 따로 흔들림 */
+  float edge=smoothstep(0.32,0.5,abs(u.x-0.5))*smoothstep(uNeck,uChest+0.3,u.y);
+  p.x+=uAmp*0.004*edge*sin(t*1.2+u.y*5.0)*sign(u.x-0.5);
+  /* 몸 전체: 발을 기준으로 천천히 무게 이동 (로봇은 둥실둥실) */
+  p=rot(p,vec2(0.5,1.2),uAmp*(0.0065+happy*0.004)*sin(t*0.62));
+  p.y+=uBot*0.012*sin(t*1.6);
+  vec2 q=p*(1.0-2.0*uPad)+uPad;
+  gl_Position=vec4(q.x*2.0-1.0,1.0-q.y*2.0,0.0,1.0);
+}`;
+  const FS=`precision mediump float;uniform sampler2D uTex;varying vec2 vUV;void main(){gl_FragColor=texture2D(uTex,vUV);}`;
+  const sh=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.warn(gl.getShaderInfoLog(s));return null}return s};
+  const vs=sh(gl.VERTEX_SHADER,VS),fs=sh(gl.FRAGMENT_SHADER,FS);if(!vs||!fs)return null;
+  const pr=gl.createProgram();gl.attachShader(pr,vs);gl.attachShader(pr,fs);gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return null;gl.useProgram(pr);
+  const NX=34,NY=56,uv=[],idx=[];
+  for(let y=0;y<=NY;y++)for(let x=0;x<=NX;x++)uv.push(x/NX,y/NY);
+  for(let y=0;y<NY;y++)for(let x=0;x<NX;x++){const a=y*(NX+1)+x,b=a+1,c=a+NX+1,d=c+1;idx.push(a,b,c,b,d,c)}
+  const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(uv),gl.STATIC_DRAW);
+  const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(idx),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(pr,'aUV');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const U={};['uT','uTalk','uMood','uNeck','uChest','uSeed','uAsp','uPad','uBot','uAmp'].forEach(n=>U[n]=gl.getUniformLocation(pr,n));
+  const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,true);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+  const PAD=.06;const st={talk:0,talkT:0,mood:0,moodT:0,ready:false,asp:.5,cfg:{neck:.25,chest:.45},seed:0,amp:1};
+  let raf=0;const t0=performance.now();
+  function frame(){
+    raf=requestAnimationFrame(frame);
+    if(!canvas.isConnected){cancelAnimationFrame(raf);const x=gl.getExtension('WEBGL_lose_context');x&&x.loseContext();return}
+    if(lost||!st.ready||!canvas.offsetParent)return;
+    st.talk+=(st.talkT-st.talk)*.15;st.mood+=(st.moodT-st.mood)*.06;
+    const w=canvas.width,h=canvas.height;gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1f(U.uT,(performance.now()-t0)/1000);gl.uniform1f(U.uTalk,st.talk);gl.uniform1f(U.uMood,st.mood);
+    gl.uniform1f(U.uNeck,st.cfg.neck);gl.uniform1f(U.uChest,st.cfg.chest);gl.uniform1f(U.uSeed,st.seed);gl.uniform1f(U.uAsp,st.asp);
+    gl.uniform1f(U.uPad,PAD);gl.uniform1f(U.uBot,st.cfg.bot?1:0);gl.uniform1f(U.uAmp,st.amp);
+    gl.drawElements(gl.TRIANGLES,idx.length,gl.UNSIGNED_SHORT,0);
+  }
+  raf=requestAnimationFrame(frame);
+  return {
+    PAD,
+    get ok(){return !lost&&!gl.isContextLost()},
+    set(img,key){if(lost||gl.isContextLost())return false;try{gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);}catch(e){return false}
+      st.asp=img.naturalWidth/img.naturalHeight;st.cfg=rigCfg(key);st.seed=(key.length*7.3)%10;st.ready=true;return true},
+    size(cssW,cssH){const d=Math.min(window.devicePixelRatio||1,1.5);const W=cssW/(1-2*PAD),H=cssH/(1-2*PAD);
+      canvas.style.width=W+'px';canvas.style.height=H+'px';canvas.style.left=(-cssW*PAD/(1-2*PAD))+'px';canvas.style.top=(-cssH*PAD/(1-2*PAD))+'px';
+      canvas.width=Math.round(W*d);canvas.height=Math.round(H*d)},
+    talk(on){st.talkT=on?1:0},
+    mood(m){st.moodT=m},
+    amp(a){st.amp=a}
+  };
+}
+
+const BG_AFTER = new Set(['heat','fire','storm','food','sea','animal']); // 복원 후 배경: img/bg_<장면>_after.webp 를 올리고 여기에 이름 추가
+const BG_IMG = new Set(['prologue','heat','fire','storm','food','sea','animal','ending']);
+function setScene(k){
+  const s=SCENES[k];const bg=$('bg');
+  if(bg.dataset.k&&bg.dataset.k!==k){bg.classList.add('fade');setTimeout(()=>{bg.dataset.k='';setScene(k);bg.classList.remove('fade')},450);return}
+  bg.dataset.k=k;BGM.play(k);
+  if(BG_IMG.has(k)){
+    // 그림 배경 + 아래쪽만 살짝 어둡게(대화창 가독성)
+    $('bg').style.background=`linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.25)), url(img/bg_${k}.webp) center/cover no-repeat, ${s.bg}`;
+    $('scenery').innerHTML='';
+  }else{
+    $('bg').style.background=s.bg;
+    $('scenery').innerHTML=s.sc.map(([e,x,y,size],i)=>`<div class="sc" style="left:${x}%;top:${y}%;font-size:${size}px;animation-delay:${i*.7}s">${e}</div>`).join('');
+  }
+}
+/* 배경 미리 불러오기 — 장이 바뀔 때 깜빡임 방지 */
+BG_IMG.forEach(k=>{const i=new Image();i.src=`img/bg_${k}.webp`});
+BG_AFTER.forEach(k=>{const i=new Image();i.src=`img/bg_${k}_after.webp`});
+window._pre=[...IMG].map(k=>{const i=new Image();i.src=`img/ch_${k}.webp`;return i});
+
+/* ================= 대화 엔진 ================= */
+let typing=null,curText='',onLineDone=null;
+function dialog(lines,done){
+  let i=0;$('dialog').classList.remove('hidden');
+  lines=lines.slice();
+  const show=()=>{
+    $('choices').classList.add('hidden');$('nextHint').style.display='';
+    if(i<lines.length&&!Array.isArray(lines[i])){return choice(lines[i])}
+    if(i>=lines.length){$('dialog').classList.add('hidden');$('portrait').classList.add('hidden');$('dialog').onclick=null;done&&done();return}
+    const [whoRaw,txt]=lines[i];const [who,mood]=whoRaw.split(':');const p=P[who];
+    if(p){
+      $('speaker').classList.remove('hidden');$('speaker').textContent=who==='me'?S.name+' 요원':p.n;$('speaker').style.background=p.c;
+      const por=$('portrait');const key=spriteKey(who,mood)||('emo-'+who);
+      if(por.dataset.who!==key){
+        if(!por._built){ // 캔버스 하나를 계속 재사용
+          por.innerHTML=`<div class="rigWrap"><img alt=""><canvas class="rigc"></canvas></div><div class="emo" style="display:none"></div>`;
+          por._rig=makeRig(por.querySelector('canvas'));por._built=true;
+          if(!por._rig)por.querySelector('canvas').style.display='none';
+          else por.querySelector('canvas').addEventListener('riglost',()=>{por.querySelector('.rigWrap').classList.remove('rigOn');por.querySelector('canvas').style.display='none';por._rig=null});
+        }
+        if(!por._rig&&(por._tries||0)<3){ // 그래픽이 끊겼으면 새 캔버스로 다시 연결 (최대 3번)
+          por._tries=(por._tries||0)+1;const old=por.querySelector('canvas'),cv=document.createElement('canvas');cv.className='rigc';old.replaceWith(cv);
+          por._rig=makeRig(cv);if(por._rig)cv.addEventListener('riglost',()=>{por.querySelector('.rigWrap').classList.remove('rigOn');cv.style.display='none';por._rig=null});else cv.style.display='none';
+        }
+        const wrap=por.querySelector('.rigWrap'),em=por.querySelector('.emo'),img=por.querySelector('img'),rg=por._rig;
+        if(key.startsWith('emo-')){wrap.style.display='none';em.style.display='';em.textContent=p.e}
+        else{
+          em.style.display='none';wrap.style.display='';wrap.style.opacity=0;img.alt=p.n;
+          const src=`img/ch_${key}.webp`;let shown=false;
+          const apply=()=>{if(shown)return;shown=true;
+            if(rg&&rg.ok&&rg.set(img,key))wrap.classList.add('rigOn');else wrap.classList.remove('rigOn');
+            sizeSprite();wrap.style.opacity=1};
+          img.onload=apply;
+          if(img.getAttribute('src')===src&&img.complete&&img.naturalWidth)apply();else img.src=src;
+          clearTimeout(por._wd);por._wd=setTimeout(()=>{if(!shown){shown=true;wrap.classList.remove('rigOn');sizeSprite();wrap.style.opacity=1}},1500);
+        }
+        por.dataset.who=key;por.dataset.base=who;sizeSprite();por.classList.remove('pop','hop','sag','lean');void por.offsetWidth;por.classList.add('pop')}
+      else{ // 같은 인물이 계속 말할 때도 감정 동작
+        const anim=mood==='happy'?'hop':mood==='worry'?'sag':(who==='me'?'lean':'');
+        if(anim){por.classList.remove('pop','hop','sag','lean');void por.offsetWidth;por.classList.add(anim)}}
+      if(por._rig)por._rig.mood(mood==='happy'?1:mood==='worry'?-1:0);
+      por.classList.remove('hidden');$('line').classList.remove('narr');
+    }else{$('speaker').classList.add('hidden');$('portrait').classList.add('hidden');$('portrait').dataset.who='';$('line').classList.add('narr')}
+    type(fill(txt));
+  };
+  const choice=(c)=>{
+    $('speaker').classList.remove('hidden');$('speaker').textContent='🕵️ '+S.name+' 요원의 선택';$('speaker').style.background='#2f3e8f';
+    $('line').classList.remove('narr');clearInterval(typing);typing=null;$('line').textContent=c.q;BGM.sfx('choice');$('nextHint').style.display='none';
+    const box=$('choices');box.innerHTML='';c._tried=c._tried||{};
+    c.o.forEach((o,k)=>{const b=document.createElement('button');b.textContent=o.t;if(c._tried[k])b.classList.add('tried');b.style.animationDelay=(k*.08)+'s';
+      b.onclick=(ev)=>{ev.stopPropagation();box.classList.add('hidden');
+        const first=!Object.keys(c._tried).length;c._tried[k]=1;
+        if(o.ok){BGM.sfx('ok');if(S.fieldFirst[c.id]===undefined)S.fieldFirst[c.id]=first;save();gauge()}else BGM.sfx('no');
+        const ins=o.r.slice();if(!o.ok)ins.push(c);
+        lines.splice(i+1,0,...ins);i++;show();};
+      box.appendChild(b)});
+    box.classList.remove('hidden');
+  };
+  $('dialog').onclick=()=>{
+    if(!$('choices').classList.contains('hidden'))return;
+    if(typing){clearInterval(typing);typing=null;$('line').textContent=curText;$('portrait')._rig&&$('portrait')._rig.talk(false);return}
+    i++;show();
+  };
+  show();
+}
+function sizeSprite(){
+  const img=$('portrait').querySelector('img');if(!img)return;
+  const set=()=>{
+    const H=window.innerHeight, W=window.innerWidth;
+    const who=$('portrait').dataset.base;
+    const base=who==='me'?'agent_'+(S.gender||'boy'):who;
+    const [real,vis]=SPR[base]||[1,.7];
+    const body=Math.min(H*1.05, W*1.6); // 어른 전신 키(px)
+    let h=body*real*vis, top=H*0.08+body*(1-real);
+    if(base==='bot'){h=H*0.5;top=H*0.2}
+    else{
+      const dlgTop=H-($('dialog').offsetHeight||170)-22;
+      if(top+h<dlgTop+60) top=dlgTop+60-h; // 잘린 아랫단이 대화창 뒤에 숨도록
+    }
+    img.style.height=h+'px';
+    $('portrait').style.bottom=(H-top-h)+'px';
+    const rg=$('portrait')._rig;if(rg&&img.naturalWidth)rg.size(h*img.naturalWidth/img.naturalHeight,h);
+  };
+  img.complete&&img.naturalHeight?set():img.addEventListener('load',set,{once:true});
+}
+window.addEventListener('resize',sizeSprite);
+function type(t){
+  curText=t;const el=$('line');el.textContent='';let k=0;
+  clearInterval(typing);
+  const rg=$('portrait')._rig;if(rg)rg.talk(!$('portrait').classList.contains('hidden'));
+  typing=setInterval(()=>{k++;el.textContent=t.slice(0,k);if(k>=t.length){clearInterval(typing);typing=null;rg&&rg.talk(false)}},32);
+}
+function titleCard(emo,num,big,then){
+  const tc=$('titleCard');tc.querySelector('.emo').textContent=emo;tc.querySelector('.num').textContent=num;tc.querySelector('.big').textContent=big;
+  tc.classList.add('show');BGM.sfx('chime');setTimeout(()=>{tc.classList.remove('show');setTimeout(then,450)},1700);
+}
+
+/* ================= 패널 ================= */
+function panel(html){const p=$('panel');p.innerHTML=html;p.classList.remove('hidden');p.scrollTop=0}
+function closePanel(){$('panel').classList.add('hidden');$('panel').innerHTML=''}
+
+/* ---- 조사 미션 ---- */
+/* 퀴즈 묶음: 하나를 맞히면 다음 문제가 열림 */
+function quizHTML(list,pre){
+  return list.map((q,qi)=>`<div class="step ${qi?'locked':''} qz" id="${pre}${qi}"><h3>❓ ${qi+1}. ${q.q}</h3><div class="opts">${q.o.map((o,i)=>`<button class="opt" data-q="${qi}" data-i="${i}">${q.o===OX?o:(i+1)+'. '+o}</button>`).join('')}</div><div class="fb"></div></div>`).join('');
+}
+function quizBind(list,pre,store,keyFn,onDone){
+  const tries={};let solved=0;
+  list.forEach((q,qi)=>{
+    const st=$(pre+qi);
+    st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(st.dataset.solved)return;
+      const i=+b.dataset.i,fb=st.querySelector('.fb');tries[qi]=(tries[qi]||0)+1;
+      if(i===q.a){BGM.sfx('ok');b.classList.add('right');fb.className='fb show ok';fb.textContent='⭕ '+q.ex;st.dataset.solved=1;
+        const k=keyFn(qi);if(store[k]===undefined)store[k]=tries[qi]===1;save();gauge();solved++;
+        const nx=$(pre+(qi+1));
+        if(nx){nx.classList.remove('locked');setTimeout(()=>nx.scrollIntoView({behavior:'smooth',block:'center'}),350)}
+        if(solved===list.length)onDone();
+      }else{BGM.sfx('no');b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong');fb.className='fb show no';fb.textContent='다시 생각해 봐요! 자료 카드를 한 번 더 읽어 보세요.'}
+    });
+  });
+}
+function mission(ci,next){
+  const c=CH[ci],nCards=c.cards.length;
+  panel(`<div class="sheet">
+    <span class="tag">🔎 조사 미션 ${ci+1}</span>
+    <h2>${c.icon} ${c.title}</h2>
+    <p class="lead">자료 카드 ${nCards}장을 모두 눌러서 읽어 보세요. 다 읽으면 확인 문제 ${c.quizzes.length}개가 차례로 열려요.</p>
+    <div class="cards">${c.cards.map((d,i)=>`<button class="card" data-i="${i}"><span class="check">✅</span><div class="ic">${d[0]}</div><h3>${d[1]}</h3><div class="openme">눌러서 읽기 👆</div><div class="body">${d[2]}</div></button>`).join('')}</div>
+    <div id="qWrap" class="step locked" style="border:none;padding-top:0">${quizHTML(c.quizzes,'q')}</div>
+    <div class="btnrow"><button class="btn" id="goNext" disabled>현장 출동하기 ▶</button></div>
+  </div>`);
+  const opened=new Set();let qDone=false;
+  document.querySelectorAll('.card').forEach(b=>b.onclick=()=>{if(!b.classList.contains('open'))BGM.sfx('card');b.classList.add('open');opened.add(b.dataset.i);
+    if(opened.size===nCards&&$('qWrap').classList.contains('locked')){$('qWrap').classList.remove('locked');setTimeout(()=>$('q0')?.scrollIntoView({behavior:'smooth',block:'center'}),300)}});
+  quizBind(c.quizzes,'q',S.quizFirst,qi=>c.key+'-'+qi,()=>{qDone=true;$('goNext').disabled=false;setTimeout(()=>$('goNext')?.scrollIntoView({behavior:'smooth',block:'center'}),400)});
+  $('goNext').onclick=()=>{save();closePanel();next()};
+}
+
+/* ---- 최종 점검 퀴즈 ---- */
+function finalQuiz(next){
+  panel(`<div class="sheet">
+    <span class="tag">🏆 최종 관문</span>
+    <h2>🎓 기후 대응 요원 최종 점검</h2>
+    <p class="lead">6개 사건에서 배운 내용을 확인해요. ${FINAL.length}문제를 모두 풀면 하늘이에게 답장을 보낼 수 있어요!</p>
+    ${quizHTML(FINAL,'f')}
+    <div class="btnrow"><button class="btn" id="finDone" disabled>하늘이에게 가기 ▶</button></div>
+  </div>`);
+  quizBind(FINAL,'f',S.finalFirst,qi=>'f'+qi,()=>{$('finDone').disabled=false;setTimeout(()=>$('finDone')?.scrollIntoView({behavior:'smooth',block:'center'}),400)});
+  $('finDone').onclick=()=>{S.finalDone=true;save();closePanel();next()};
+}
+
+/* ---- 분류 ---- */
+function classify(ci,next){
+  const c=CH[ci];
+  panel(`<div class="sheet">
+    <span class="tag">🧩 대응 작전 ${ci+1}</span>
+    <h2>${c.icon} 어떤 대응 방법일까?</h2>
+    <p class="lead">각 방법이 <b>누가</b> 할 수 있는 일인지 골라 보세요. 처음에 맞힐수록 마을 게이지가 많이 올라가요!</p>
+    <div class="legend">
+      <div class="lg r"><b>🙋 개인이 할 수 있는 일</b>나와 가족이 생활 속에서 직접 실천하는 일</div>
+      <div class="lg a"><b>🏛️ 사회가 할 수 있는 일</b>나라, 지역, 학교, 기업이 함께 제도나 시설을 만드는 일</div>
+    </div>
+    <div class="acts">${c.acts.map((a,i)=>`<div class="act" id="act${i}"><div class="ae">${a[0]}</div><div class="at">${a[1]}</div><div class="ab"><button class="bR" data-i="${i}" data-t="p">🙋 개인</button><button class="bA" data-i="${i}" data-t="s">🏛️ 사회</button></div></div>`).join('')}</div>
+    <div class="step locked" id="nStep">
+      <h3>📒 조사 수첩: ${c.title.split(', ')[1]||c.title}에 어떻게 대응할 수 있을까?</h3>
+      <p class="lead" style="margin:0 0 8px">자료 카드, 현장 출동, 위의 작전 카드를 떠올리며 써 보세요. 위 카드에 없는 방법을 새로 떠올리면 더 좋아요!</p>
+      <label class="q">🙋 개인이 할 수 있는 대응</label>
+      <input type="text" id="nP" maxlength="80" placeholder="나와 가족이 생활 속에서 할 수 있는 일" value="${esc((S.notes[c.key]||{}).p||'')}">
+      <label class="q">🏛️ 사회가 할 수 있는 대응</label>
+      <input type="text" id="nS" maxlength="80" placeholder="나라, 지역, 학교, 기업이 함께 할 수 있는 일" value="${esc((S.notes[c.key]||{}).s||'')}">
+      <label class="q">💡 위의 두 방법 중 하나를 골라, 왜 도움이 되는지 써 보세요.</label>
+      <textarea id="nW" rows="2" maxlength="140" placeholder="( )을/를 하면 ( )하기 때문에 도움이 된다.">${esc((S.notes[c.key]||{}).why||'')}</textarea>
+      <div class="count" id="nCnt"></div>
+    </div>
+    <div class="btnrow"><button class="btn" id="clsDone" disabled>작전 완료 ▶</button></div>
+  </div>`);
+  const tried={},solved={};let first=0;
+  const nOK=()=>{const p=$('nP').value.trim(),s=$('nS').value.trim(),w=$('nW').value.trim();
+    const msg=[];if(p.length<6)msg.push('🙋 개인 대응');if(s.length<6)msg.push('🏛️ 사회 대응');if(w.length<10)msg.push('💡 까닭');
+    if(p&&s&&p===s)msg.push('개인과 사회에 서로 다른 방법');
+    $('nCnt').textContent=msg.length?'아직 필요해요: '+msg.join(', '):'✅ 모두 썼어요!';return !msg.length};
+  const chk=()=>{const ok=nOK();$('clsDone').disabled=!(ok&&Object.keys(solved).length===c.acts.length)};
+  ['nP','nS','nW'].forEach(id=>$(id).oninput=chk);
+  document.querySelectorAll('.ab button').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i,t=b.dataset.t,a=c.acts[i],box=$('act'+i);
+    if(solved[i])return;
+    const isFirst=!tried[i];tried[i]=true;
+    if(t===a[2]){
+      solved[i]=1;if(isFirst)first++;BGM.sfx('ok');
+      box.classList.add(t==='p'?'doneR':'doneA');
+      box.querySelector('.ab').innerHTML=`<span class="badge ${t==='p'?'r':'a'}">${t==='p'?'🙋 개인':'🏛️ 사회'} ${isFirst?'⭕':''}</span>`;
+      box.insertAdjacentHTML('beforeend',`<div class="why">💡 ${a[3]}</div>`);
+      if(Object.keys(solved).length===c.acts.length){$('nStep').classList.remove('locked');chk();setTimeout(()=>$('nStep')?.scrollIntoView({behavior:'smooth',block:'center'}),450)}
+    }else{BGM.sfx('no');box.classList.remove('wrong');void box.offsetWidth;box.classList.add('wrong');toast('다시 생각해 봐요! 나 혼자서도 할 수 있는 일일까, 여럿이 함께 시설이나 제도를 만들어야 하는 일일까?')}
+  });
+  $('clsDone').onclick=()=>{S.notes[c.key]={p:$('nP').value.trim(),s:$('nS').value.trim(),why:$('nW').value.trim()};S.cls[c.key]=first;S.ch=ci+1;save();gauge();closePanel();next()};
+}
+
+/* ================= 진행 ================= */
+function runChapter(ci){
+  if(ci>=CH.length)return S.finalDone?ending():(dots(CH.length),(BGM.play('final'),finalQuiz(ending)));
+  const c=CH[ci];S.ch=ci;dots(ci);setScene(c.key);
+  titleCard(c.icon,`사건 ${ci+1}`,c.title,()=>{
+    dialog(c.intro,()=>{BGM.play('lab');mission(ci,()=>{
+      BGM.play('alert');setTimeout(()=>BGM.sfx('alert'),150);
+      titleCard('🚨',`사건 ${ci+1}`,'현장 출동!',()=>dialog(c.field,()=>{BGM.play('lab');classify(ci,()=>{
+        BGM.play('solved');BGM.sfx('fanfare');
+        dialog(c.outro,()=>{save();runChapter(ci+1)});
+      })}));
+    })});
+  });
+}
+
+function prologue(){
+  setScene('prologue');dots(-1);
+  titleCard('💌','프롤로그','시간 우체통',()=>dialog([
+    ['bot','삐빅! {name} 요원님, 시간 우체통에 편지가 도착했어요!'],
+    ['sky','안녕? 나는 2050년에 사는 하늘이야.'],
+    ['sky:worry','우리 마을은 요즘 너무 힘들어. 여름엔 밖에 나갈 수 없을 만큼 덥고, 산불과 태풍도 자주 와.'],
+    ['sky:worry','바다엔 물고기가 줄고, 사과도 귀해졌어. 동물 친구들도 하나둘 사라지고 있어.'],
+    ['sky:worry','2026년에 사는 네가 미래를 바꿀 방법을 찾아 줄 수 있을까?'],
+    ['me:happy','좋아, 하늘아! 내가 꼭 방법을 찾아볼게!'],
+    ['bot','요원님, 기후 변화에 대응하는 노력은 누가 하느냐에 따라 두 가지로 나눠 볼 수 있어요.'],
+    ['bot','첫째, 나와 가족이 생활 속에서 실천하는 🙋 ‘개인’의 노력!'],
+    ['bot','둘째, 나라, 지역, 학교, 기업이 함께 시설과 제도를 만드는 🏛️ ‘사회’의 노력!'],
+    ['bot','6개의 사건을 조사하고, 알맞은 대응 작전으로 하늘이네 마을을 지켜 봐요!']
+  ],()=>runChapter(0)));
+}
+
+/* ================= 엔딩 ================= */
+function petals(on){
+  const box=$('petals');box.innerHTML='';if(!on)return;
+  const em=['🌸','✨','🍃','🌼','💫'];
+  for(let i=0;i<26;i++){const d=document.createElement('div');d.className='petal';d.textContent=em[i%em.length];
+    d.style.left=(Math.random()*100)+'%';d.style.fontSize=(16+Math.random()*16)+'px';
+    d.style.animationDuration=(7+Math.random()*7)+'s';d.style.animationDelay=(-Math.random()*12)+'s';box.appendChild(d)}
+}
+function ending(){
+  const pct=gauge();dots(CH.length);setScene('ending');
+  setTimeout(()=>BGM.play('tearful'),700);
+  const msg=pct>=80?'요원님 덕분에 우리 마을이 다시 살아났어. 하늘이 이렇게 맑은 건 정말 오랜만이야.':pct>=50?'마을이 몰라보게 좋아졌어. 아직 할 일이 남았지만, 이제 희망이 보여.':'마을이 조금씩 바뀌기 시작했어. 작은 변화가 모이면 분명 더 달라질 거야.';
+  titleCard('🌈','엔딩','바뀐 미래',()=>{petals(true);dialog([
+    ['n','시간 우체통이 반짝이며, 마지막 편지가 도착한다. ✉️'],
+    ['sky:happy','{name} 요원! 나야, 하늘이.'],
+    ['sky:happy',msg],
+    ['n','하늘이의 편지 속에서, 그동안 만난 사람들의 목소리가 들려온다.'],
+    ['gma','올여름엔 이 할미도 무더위 쉼터에서 시원하게 지냈단다. 고맙다, 우리 요원.'],
+    ['fire','올봄엔 큰 산불이 한 번도 없었어. 산이 다시 초록빛이야.'],
+    ['fish','이번 태풍에도 우리 마을은 끄떡없었다네. 허허.'],
+    ['farm','올해는 사과가 정말 맛있게 열렸어. 너에게 꼭 하나 맛보여 주고 싶구나.'],
+    ['diver','바닷속 숲이 다시 자라고 있단다. 물고기들도 하나둘 돌아오고 있어.'],
+    ['dr','꿀벌들이 다시 꽃밭을 날아다니고 있어. 모두 네 덕분이야.'],
+    ['bot','삐빅… 요원님, 마을 사람들 모두가 웃고 있어요.'],
+    ['sky:worry','그런데 {name} 요원… 사실 아직 다 끝난 건 아니야.'],
+    ['sky','2050년의 미래는, 지금 2026년을 사는 너희가 하루하루 만들어 가고 있거든.'],
+    ['sky','그러니까 마지막으로… 나랑 약속 하나만 해 줄래?'],
+    ['sky','그리고 학교나 마을, 나라에 바라는 점이 있다면 그것도 알려 줘. 어린이의 목소리도 사회를 바꾸는 힘이거든.'],
+    ['me','…응. 하늘아, 꼭 약속할게.']
+  ],promiseForm)});
+}
+function letterScene(){
+  const pr=S.promise;
+  const txt=`${S.name} 요원에게
+
+네 약속, 잘 받았어.
+‘${pr.what}’
+${pr.when}, 꼭 지켜 줄 거지?
+
+그리고 ${(TO[pr.to]||'').replace(/^\S+ /,'')}에 보낸 네 제안,
+‘${pr.ask||''}’
+그 목소리도 꼭 전해질 거야.
+
+처음엔 미래가 바뀔 수 있을까 걱정했는데,
+너를 만나고 알게 됐어.
+작은 실천과 함께하는 노력이 모이면 미래가 바뀐다는 걸.
+
+한 사람 한 사람의 실천과 모두가 함께하는 노력이 만나면,
+2050년 우리 마을에 꽃이 피어날 거야.
+
+언젠가 2050년에서 꼭 만나자.
+— 너의 친구, 하늘이가 🌸`;
+  const ov=$('letterOv');ov.classList.remove('hidden');
+  ov.innerHTML=`<div class="paper"><span class="stamp">💌</span><div id="ltx"></div><div class="btnrow" style="justify-content:center;margin-top:10px"><button class="btn" id="ltDone" style="visibility:hidden">답장 닫기 ✉️</button></div></div>`;
+  const el=$('ltx');let k=0;
+  const t=setInterval(()=>{k++;el.textContent=txt.slice(0,k);if(k>=txt.length){clearInterval(t);$('ltDone').style.visibility='visible'}},45);
+  ov.querySelector('.paper').onclick=()=>{if(k<txt.length){k=txt.length-1}};
+  $('ltDone').onclick=(ev)=>{ev.stopPropagation();ov.classList.add('hidden');ov.innerHTML='';
+    dialog([
+      ['sky:happy','고마워, {name} 요원! 우리 꼭 다시 만나자!'],
+      ['me:happy','응! 2050년에서 만나, 하늘아!'],
+      ['bot','삐빅… 시간 우체통 연결을 마칩니다. 요원님, 정말 수고 많으셨어요!']
+    ],()=>epilogue(credits))};
+}
+function epilogue(done){
+  const E=$('epi'),pr=S.promise||{},me=spriteKey('me','happy')||'agent_boy';
+  E.innerHTML=`<div class="ebg" id="eA"></div><div class="ebg" id="eB"></div><div id="eShade"></div><div id="eSpr"><div class="rigWrap"><img alt=""><canvas class="rigc"></canvas></div></div><div id="eSpark"></div><div id="eWipe"></div>
+    <div id="eYear"></div><div id="eCap"></div><div id="eTitle"></div><div id="eFlash"></div><button id="eSkip">건너뛰기 ⏩</button>`;
+  E.classList.remove('hidden');petals(false);$('portrait').classList.add('hidden');
+  let ab=false,flip=false;
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const end=()=>{if(ab)return;ab=true;E.classList.add('hidden');E.innerHTML='';done&&done()};
+  $('eSkip').onclick=end;
+  const bg=(k,heal)=>{const cur=$(flip?'eA':'eB'),old=$(flip?'eB':'eA');flip=!flip;
+    cur.className='ebg';cur.style.backgroundImage=`url(img/bg_${k}.webp)`;void cur.offsetWidth;cur.classList.add('show','kb');if(heal)cur.classList.add('heal');old.classList.remove('show');return cur};
+  const cap=async(t)=>{const c=$('eCap');if(!c)return;c.classList.remove('show');await wait(450);if(ab)return;c.innerHTML=t;c.classList.add('show')};
+  const eImg=E.querySelector('#eSpr img'),eWrap=E.querySelector('#eSpr .rigWrap'),eRig=makeRig(E.querySelector('#eSpr canvas'));
+  if(eRig){eRig.mood(1);E.querySelector('#eSpr canvas').addEventListener('riglost',()=>{eWrap.classList.remove('rigOn');E.querySelector('#eSpr canvas').style.display='none'})}else E.querySelector('#eSpr canvas').style.display='none';
+  const spr=async(k,hgt)=>{try{const s=$('eSpr');if(!s)return;s.classList.remove('show');eRig&&eRig.talk(false);await wait(380);if(ab)return;if(!k)return;
+    await new Promise(r=>{eImg.onload=r;eImg.onerror=r;eImg.src=`img/ch_${k}.webp`});if(ab)return;
+    const hh=window.innerHeight*parseFloat(hgt||'74')/100;eImg.style.height=hh+'px';
+    if(eRig&&eRig.ok&&eRig.set(eImg,k)){eWrap.classList.add('rigOn');eRig.size(hh*eImg.naturalWidth/eImg.naturalHeight,hh)}else eWrap.classList.remove('rigOn');
+    void s.offsetWidth;s.classList.add('show')}catch(e){}};
+  const sparkle=(n)=>{const box=$('eSpark');if(!box)return;const em=['✨','🌸','🍃','💫','🌼'];
+    for(let i=0;i<n;i++){const d=document.createElement('div');d.className='spk';d.textContent=em[i%em.length];d.style.left=(30+Math.random()*40)+'%';d.style.top=(35+Math.random()*30)+'%';
+      d.style.setProperty('--dx',(Math.random()*400-200)+'px');d.style.setProperty('--dy',(Math.random()*-300-40)+'px');d.style.animationDelay=(Math.random()*.4)+'s';box.appendChild(d);setTimeout(()=>d.remove(),2600)}};
+  const year=async(to,from)=>{const y=$('eYear');y.classList.add('show');const steps=Math.min(12,Math.abs(to-from));
+    for(let i=1;i<=steps;i++){if(ab)return;y.textContent=Math.round(from+(to-from)*i/steps);await wait(55)}BGM.sfx('card')};
+  (async()=>{try{
+    BGM.play('tearful');
+    // 0. 암전
+    await cap('그 후로, 시간이 흘렀습니다…');await wait(2600);if(ab)return;
+    // 1. 2026년 — 약속
+    bg('prologue',true).classList.add('dim');$('eYear').textContent='2026';$('eYear').classList.add('show');
+    await cap(`2026년, <b>${esc(S.name)} 요원</b>이 하늘이에게 약속했습니다.`);await spr(me,'72vh');eRig&&eRig.talk(true);await wait(2000);eRig&&eRig.talk(false);await wait(800);if(ab)return;
+    await cap(`🙋 ‘${esc(pr.what||'')}’`);await wait(2600);if(ab)return;
+    if(pr.ask){await cap(`🏛️ 그리고 ${(TO[pr.to]||'').replace(/^\S+ /,'')}에 제안했습니다.<br>‘${esc(pr.ask)}’`);await wait(2800);if(ab)return}
+    await cap('그 작은 약속이, 마을을 바꾸기 시작했습니다.');await spr(null);await wait(2200);if(ab)return;
+    // 2. 몽타주
+    BGM.play('credits');
+    const beats=[
+      [2030,'heat','gma','마을 곳곳에 무더위 쉼터와 그늘 숲이 생겼습니다.'],
+      [2034,'fire','fire','숲을 지키는 드론이 날고, 산은 다시 초록빛이 되었습니다.'],
+      [2038,'storm','fish','빗물을 모아 두는 시설 덕분에, 태풍이 와도 마을은 안전했습니다.'],
+      [2042,'food','farm','더위에 강한 사과가 다시 주렁주렁 열렸습니다.'],
+      [2046,'sea','diver','되살아난 바다숲으로 물고기들이 돌아왔습니다.'],
+      [2049,'animal','dr','꿀벌이 날고, 동물들은 생태 통로를 건넙니다.']];
+    let prev=2026;
+    for(const [y,k,s,t] of beats){
+      if(ab)return;
+      spr(null);const layer=bg(k,false);$('eYear').classList.remove('gold');await year(y,prev);prev=y;if(ab)return;
+      await cap(t);await wait(1300);if(ab)return;
+      $('eWipe').classList.remove('go');void $('eWipe').offsetWidth;$('eWipe').classList.add('go');
+      if(BG_AFTER.has(k)){bg(k+'_after',true)}else layer.classList.add('heal');sparkle(14);BGM.sfx('ok');await spr(s,'72vh');await wait(2300);
+    }
+    if(ab)return;await spr(null);
+    // 3. 2050년 — 하이라이트
+    $('eCap').classList.remove('show');await wait(400);
+    $('eFlash').style.opacity=1;await wait(260);if(ab)return;
+    bg('ending',true);$('eYear').classList.add('gold');$('eYear').textContent='2050';BGM.sfx('fanfare');BGM.play('ending');
+    $('eFlash').style.opacity=0;sparkle(30);setTimeout(()=>sparkle(24),900);
+    await wait(900);if(ab)return;
+    await spr('sky_happy','82vh');await cap('2050년, 하늘이의 마을');await wait(2600);if(ab)return;
+    await cap(`“2026년의 <b>${esc(S.name)} 요원</b>, 고마워.<br>이건 네가 바꾼 미래야!”`);eRig&&eRig.talk(true);sparkle(20);await wait(2400);eRig&&eRig.talk(false);await wait(1400);if(ab)return;
+    // 4. 타이틀
+    await spr(null);$('eCap').classList.remove('show');$('eYear').classList.remove('show');
+    $('eTitle').innerHTML='<div><div class="t1">미래는 지금,<br>우리가 만들어요 🌏</div><div class="t2">2050년에서 온 편지 · 에필로그</div></div>';$('eTitle').classList.add('show');
+    sparkle(30);await wait(5200);end();
+  }catch(e){if(!ab)console.warn(e)}})();
+}
+const FIN_SRC='video/epilogue_2050_v2.mp4';
+function preloadFinal(){const v=$('finV');if(!v.getAttribute('src')){v.src=FIN_SRC;v.preload='auto';try{v.load()}catch(e){}}}
+function finalVideo(done){
+  const F=$('fin'),v=$('finV');preloadFinal();
+  F.classList.remove('hidden');$('finEnd').style.display='none';$('finSkip').style.display='';
+  BGM.stop();petals(false);
+  v.muted=BGM.isMuted();$('finSnd').style.display=v.muted?'':'none';
+  const finish=()=>{v.pause();F.classList.add('hidden');done&&done()};
+  $('finSnd').onclick=()=>{v.muted=false;$('finSnd').style.display='none'};
+  $('finSkip').onclick=finish;
+  v.onended=()=>{$('finEnd').style.display='block';$('finSkip').style.display='none'};
+  $('finEnd').onclick=finish;
+  v.onerror=()=>{toast('영상을 불러오지 못했어요.');finish()};
+  try{v.currentTime=0}catch(e){}
+  const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;$('finSnd').style.display='';v.play().catch(()=>finish())});
+}
+function credits(){
+  petals(false);BGM.play('credits');preloadFinal();
+  const pr=S.promise,sc=scores(),me='img/ch_'+(spriteKey('me','happy')||'agent_boy')+'.webp';
+  const cast=[['sky_happy','하늘이','2050년에서 편지를 보낸 친구'],['gma','하늘이 할머니','폭염을 이겨 낸 할머니'],['fire','박 대원','산불을 막아 낸 산림 소방관'],['fish','어부 할아버지','태풍에 맞선 바닷가 마을 어부'],['farm','과수원 이모','새 사과를 키워 낸 농부'],['diver','해녀 할머니','바닷속 숲을 지키는 해녀'],['dr','윤 박사','동물 친구들을 지키는 과학자'],['bot','기후봇','언제나 곁에 있던 든든한 조수']];
+  $('roll').innerHTML=`
+    <div style="height:100vh"></div>
+    <div class="cr-sec"><div style="font-size:60px">💌</div><div class="big">2050년에서 온 편지</div><p>기후 변화에 어떻게 대응할 수 있을까?</p></div>
+    <div class="cr-sec"><h4>주인공</h4><img src="${me}" style="height:200px"><div class="nm">기후 대응 요원 ${esc(S.name)}</div></div>
+    <div class="cr-sec"><h4>함께한 사람들</h4>${cast.map(c=>`<div class="cr-row"><img src="img/ch_${c[0]}.webp"><div><div class="nm">${c[1]}</div><div class="role">${c[2]}</div></div></div>`).join('')}</div>
+    <div class="cr-sec"><h4>해결한 사건</h4><p>${CH.map(c=>c.icon+' '+c.title).join('<br>')}</p></div>
+    <div class="cr-sec"><h4>${esc(S.name)} 요원의 기록</h4><p>읽은 자료 카드 ${CH.reduce((t,c)=>t+c.cards.length,0)}장<br>확인 문제 ${sc.quizT}개 · 현장 판단 ${sc.fieldT}번<br>대응 작전 ${sc.clsT}개 · 최종 점검 ${sc.finT}문제<br>조사 수첩 ${Object.keys(S.notes).length}쪽</p></div>
+    <div class="cr-sec"><h4>🙋 나의 약속</h4><div class="nm" style="font-size:30px">‘${esc(pr.what||'')}’</div><p>${esc(pr.when||'')}</p></div>
+    <div class="cr-sec"><h4>🏛️ ${(TO[pr.to]||'사회').replace(/^\S+ /,'')}에 보낸 제안</h4><div class="nm" style="font-size:28px">‘${esc(pr.ask||'')}’</div></div>
+    <div class="cr-sec"><h4>기획·제작</h4><div class="nm">우리 반 선생님</div><h4 style="margin-top:26px">함께 만든 사람들</h4><div class="nm">4학년 기후 대응 요원들</div></div>
+    <div class="cr-sec" id="crLast"><div class="cr-group"><img src="img/ch_gma.webp"><img src="img/ch_fire.webp"><img src="img/ch_sky_happy.webp"><img src="${me}"><img src="img/ch_bot.webp" style="height:80px"><img src="img/ch_farm.webp"><img src="img/ch_fish.webp"></div>
+      <p style="font-size:22px;margin-top:16px">이 이야기의 다음 장은<br><b class="jua" style="font-size:30px;color:#ffd166">${esc(S.name)} 요원</b>이 이어 씁니다.</p>
+      <div class="big" style="font-size:34px;margin-top:20px">To be continued… in 2026 🌏</div></div>`;
+  const cr=$('credits'),roll=$('roll');cr.classList.remove('hidden');$('crEnd').style.display='none';
+  roll.style.transition='none';roll.style.transform='translateY(0)';
+  const finish=()=>{$('crEnd').style.display='block';$('crSkip').style.display='none'};
+  requestAnimationFrame(()=>{
+    const last=$('crLast'),endY=last.offsetTop+last.offsetHeight/2-window.innerHeight*.42;
+    const dur=Math.min(70,Math.max(25,endY/55));
+    roll.style.transition=`transform ${dur}s linear`;roll.style.transform=`translateY(${-endY}px)`;
+    clearTimeout(cr._t);cr._t=setTimeout(finish,dur*1000);
+    $('crSkip').style.display='';
+    $('crSkip').onclick=()=>{clearTimeout(cr._t);const cur=getComputedStyle(roll).transform;roll.style.transition='none';roll.style.transform=cur;void roll.offsetWidth;roll.style.transition='transform 1.2s ease';roll.style.transform=`translateY(${-endY}px)`;setTimeout(finish,1200)};
+  });
+  $('crEnd').onclick=()=>{cr.classList.add('hidden');finalVideo(()=>{BGM.play('ending');petals(true);report()})};
+}
+
+const TO={school:'🏫 우리 학교',town:'🏘️ 우리 마을(시청·구청)',country:'🇰🇷 우리나라'};
+function promiseForm(){
+  const pr=S.promise||{};
+  panel(`<div class="sheet">
+    <span class="tag">✋ 약속과 제안</span>
+    <h2>💌 하늘이에게 답장 쓰기</h2>
+    <p class="lead">조사한 내용을 떠올리며, <b>내가 할 일</b>과 <b>사회에 바라는 일</b>을 하나씩 써 보세요.</p>
+    <div class="lg r" style="margin-top:6px"><b>🙋 나의 실천 약속</b>나와 가족이 생활 속에서 직접 할 수 있는 일</div>
+    <label class="q">1. 무엇을 실천할까요?</label>
+    <input type="text" id="pWhat" maxlength="60" placeholder="예) 양치할 때 물을 받아서 쓰기" value="${esc(pr.what||'')}">
+    <label class="q">2. 언제, 얼마나 할까요?</label>
+    <input type="text" id="pWhen" maxlength="60" placeholder="예) 매일 아침과 저녁, 2주 동안" value="${esc(pr.when||'')}">
+    <label class="q">3. 잘 지켰는지 어떻게 확인할까요?</label>
+    <input type="text" id="pCheck" maxlength="60" placeholder="예) 실천 체크표에 ○ 표시하기" value="${esc(pr.check||'')}">
+    <label class="q">4. 이 실천이 왜 기후 변화 대응에 도움이 될까요?</label>
+    <textarea id="pWhy" rows="2" maxlength="120" placeholder="예) 물을 데우고 깨끗하게 만드는 데 드는 에너지를 아낄 수 있기 때문이다.">${esc(pr.why||'')}</textarea>
+    <div class="lg a" style="margin-top:22px"><b>🏛️ 사회에 보내는 제안</b>여럿이 함께 시설이나 제도를 만들어야 하는 일</div>
+    <label class="q">5. 누구에게 제안할까요?</label>
+    <div class="typeRow">${Object.entries(TO).map(([k,v])=>`<button data-t="${k}" class="a">${v}</button>`).join('')}</div>
+    <label class="q">6. 무엇을 해 달라고 제안할까요?</label>
+    <input type="text" id="pAsk" maxlength="70" placeholder="예) 학교 옥상에 태양광 패널을 설치해 주세요." value="${esc(pr.ask||'')}">
+    <label class="q">7. 왜 그것이 필요한가요?</label>
+    <textarea id="pAskWhy" rows="2" maxlength="120" placeholder="예) 햇빛으로 전기를 만들면 온실가스를 줄일 수 있기 때문입니다.">${esc(pr.askWhy||'')}</textarea>
+    <div class="btnrow"><button class="btn" id="pDone" disabled>답장 보내기 💌</button></div>
+  </div>`);
+  let to=pr.to||'';
+  const tb=document.querySelectorAll('.typeRow button');
+  const mark=()=>tb.forEach(b=>b.classList.toggle('sel',b.dataset.t===to));mark();
+  tb.forEach(b=>b.onclick=()=>{to=b.dataset.t;mark();chk()});
+  const ids=['pWhat','pWhen','pCheck','pWhy','pAsk','pAskWhy'];
+  function chk(){$('pDone').disabled=!(to&&ids.every(id=>$(id).value.trim().length>=3))}
+  ids.forEach(id=>$(id).oninput=chk);chk();
+  $('pDone').onclick=()=>{const v=id=>$(id).value.trim();
+    S.promise={what:v('pWhat'),when:v('pWhen'),check:v('pCheck'),why:v('pWhy'),to,ask:v('pAsk'),askWhy:v('pAskWhy')};
+    S.ch=CH.length;const again=S.finished;S.finished=true;save();closePanel();again?report():letterScene()};
+}
+
+function report(){
+  $('hud').classList.remove('hidden');setScene('ending');
+  const pct=gauge();dots(CH.length);
+  const sc=scores();
+  const stars=pct>=80?'⭐⭐⭐':pct>=50?'⭐⭐':'⭐';
+  const pr=S.promise;
+  panel(`<div class="sheet report">
+    <div class="rpHead"><span class="tag">📋 기후 대응 요원 결과 보고서</span><img class="rpAgent" src="img/ch_${spriteKey('me','happy')||'agent_boy'}.webp" alt=""><h2>🕵️ ${esc(S.name)} 요원</h2><div class="stars">${stars}</div>
+    <p class="lead" style="margin:4px 0 0">마을 지킴 게이지 <b>${pct}%</b> <span style="font-size:15px">(모두 첫 시도에 맞힌 개수)</span></p>
+    <div class="rpGrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:10px">
+      <div class="rpItem" style="text-align:center"><b>❓ 확인 문제</b><br><span class="jua" style="font-size:26px">${sc.quiz}/${sc.quizT}</span></div>
+      <div class="rpItem" style="text-align:center"><b>🚨 현장 판단</b><br><span class="jua" style="font-size:26px">${sc.field}/${sc.fieldT}</span></div>
+      <div class="rpItem" style="text-align:center"><b>🧩 대응 분류</b><br><span class="jua" style="font-size:26px">${sc.cls}/${sc.clsT}</span></div>
+      <div class="rpItem" style="text-align:center"><b>🏆 최종 점검</b><br><span class="jua" style="font-size:26px">${sc.fin}/${sc.finT}</span></div>
+    </div></div>
+    <h3 class="jua" style="font-size:22px;margin-top:8px">📒 조사 수첩</h3>
+    <div class="rpGrid">${CH.map(c=>{const n=S.notes[c.key]||{};return `<div class="rpItem"><b>${c.icon} ${c.title}</b><br>${typeof n==='string'?esc(n):`🙋 ${esc(n.p||'-')}<br>🏛️ ${esc(n.s||'-')}<br>💡 ${esc(n.why||'-')}`}</div>`}).join('')}</div>
+    <div class="rpGrid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:14px">
+      <div><h3 class="jua" style="font-size:22px;margin:0 0 8px">🙋 나의 실천 약속</h3>
+      <div class="promiseCard"><b>무엇을:</b> ${esc(pr.what||'')}<br><b>언제·얼마나:</b> ${esc(pr.when||'')}<br><b>확인 방법:</b> ${esc(pr.check||'')}<br><b>도움이 되는 까닭:</b> ${esc(pr.why||'')}</div></div>
+      <div><h3 class="jua" style="font-size:22px;margin:0 0 8px">🏛️ 사회에 보내는 제안</h3>
+      <div class="promiseCard" style="background:linear-gradient(135deg,#e5effc,#e4f6ec)"><b>누구에게:</b> ${TO[pr.to]||'-'}<br><b>제안:</b> ${esc(pr.ask||'-')}<br><b>까닭:</b> ${esc(pr.askWhy||'-')}</div></div>
+    </div>
+    <div class="letter">💌 <b class="jua">2050년 하늘이의 답장</b><br>
+      ${esc(S.name)} 요원에게! 네가 약속한 ‘${esc(pr.what||'')}’, 꼭 지켜 줘. 네 제안처럼 사회도 함께 바뀌고, 너처럼 실천하는 사람이 하나둘 늘어난 덕분에 2050년 우리 마을에는 꿀벌이 날고, 바다에는 물고기가 돌아오고 있어. 고마워! — 하늘이가</div>
+    <p class="lead" style="margin-top:14px;text-align:center;font-size:15px">📅 ${new Date().getFullYear()}년 ${new Date().getMonth()+1}월 ${new Date().getDate()}일 · 2050년에서 온 편지 · 기후 대응 요원 ${esc(S.name)}</p>
+    <div class="btnrow noShot" style="justify-content:center">
+      <button class="btn" id="saveImg">📸 사진으로 저장하기</button>
+    </div>
+    <p class="lead noShot" style="margin-top:8px;text-align:center;font-size:15px">저장한 사진을 선생님께 제출하세요.</p>
+    <div class="btnrow noShot" style="justify-content:center">
+      <button class="btn ghost" id="replayE">🎬 에필로그 다시 보기</button>
+      <button class="btn ghost" id="replayV">🎞️ 마지막 영상 다시 보기</button>
+      <button class="btn ghost" id="editP">약속 고치기</button>
+      <button class="btn ghost" id="copyR">보고서 글 복사</button>
+      <button class="btn ghost" id="restart">처음부터 다시</button>
+    </div>
+  </div>`);
+  $('editP').onclick=promiseForm;
+  $('saveImg').onclick=saveReportImage;
+  $('replayV').onclick=()=>finalVideo(()=>{BGM.play('ending');petals(true)});
+  $('replayE').onclick=()=>epilogue(()=>{BGM.play('ending');petals(true)});
+  $('copyR').onclick=async()=>{
+    const txt=`[기후 대응 요원 보고서] ${S.name}\n마을 게이지 ${pct}% / 확인 문제 ${sc.quiz}/${sc.quizT} / 현장 판단 ${sc.field}/${sc.fieldT} / 대응 분류 ${sc.cls}/${sc.clsT} / 최종 점검 ${sc.fin}/${sc.finT}\n\n[조사 수첩]\n${CH.map(c=>{const n=S.notes[c.key]||{};return typeof n==='string'?`- ${c.title}: ${n}`:`- ${c.title}\n  개인: ${n.p||'-'}\n  사회: ${n.s||'-'}\n  까닭: ${n.why||'-'}`}).join('\n')}\n\n[나의 실천 약속]\n무엇을: ${pr.what||''}\n언제·얼마나: ${pr.when||''}\n확인 방법: ${pr.check||''}\n까닭: ${pr.why||''}\n\n[사회에 보내는 제안]\n누구에게: ${(TO[pr.to]||'-').replace(/^\S+ /,'')}\n제안: ${pr.ask||'-'}\n까닭: ${pr.askWhy||'-'}`;
+    try{await navigator.clipboard.writeText(txt);toast('복사했어요!')}catch(e){toast('복사가 안 되면 화면을 캡처해 주세요.')}
+  };
+  $('restart').onclick=()=>{panelConfirm()};
+}
+/* 결과 보고서를 사진(PNG)으로 */
+let _h2c=null;
+function loadH2C(){if(window.html2canvas)return Promise.resolve();if(_h2c)return _h2c;
+  _h2c=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=ok;s.onerror=()=>{_h2c=null;no()};document.head.appendChild(s)});return _h2c}
+async function saveReportImage(){
+  const btn=$('saveImg'),el=document.querySelector('.sheet.report');if(!el)return;
+  btn.disabled=true;btn.textContent='사진 만드는 중… ⏳';
+  try{
+    await loadH2C();await document.fonts.ready;
+    const cv=await html2canvas(el,{scale:2,backgroundColor:'#fffdf7',useCORS:true,
+      ignoreElements:n=>n.classList&&n.classList.contains('noShot'),
+      onclone:d=>{const p=d.getElementById('panel');if(p){p.style.overflow='visible';p.style.position='static';p.style.height='auto'}
+        const s=d.querySelector('.sheet.report');if(s){s.style.animation='none';s.style.boxShadow='none'}}});
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+    const name=`기후대응요원_${S.name}_결과보고서.png`;
+    let saved=false;
+    try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data:blob});saved=true;toast('사진을 저장했어요! 📸')}}
+    catch(e){if(e&&e.code==='declined'){toast('저장을 취소했어요.');saved=true}}
+    if(!saved)showShot(cv.toDataURL('image/png'));
+  }catch(e){toast('사진을 만들지 못했어요. 화면을 캡처해 주세요.')}
+  btn.disabled=false;btn.textContent='📸 사진으로 저장하기';
+}
+function showShot(url){ // 저장 기능을 못 쓰는 화면: 이미지를 띄워 길게 눌러 저장
+  const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:40;background:rgba(10,14,30,.85);display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px;overflow:auto';
+  o.innerHTML=`<p class="jua" style="color:#fff;font-size:20px;text-align:center">사진을 <b style="color:#ffd166">길게 눌러</b> ‘이미지 저장’을 고르세요</p><img src="${url}" style="max-width:min(720px,100%);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.5)"><button class="btn">닫기</button>`;
+  o.querySelector('button').onclick=()=>o.remove();document.body.appendChild(o);
+}
+function panelConfirm(){
+  const p=$('panel');p.insertAdjacentHTML('beforeend',`<div id="cf" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:30"><div class="sheet" style="max-width:420px;text-align:center"><h2 style="justify-content:center">처음부터 할까요?</h2><p class="lead">지금까지 쓴 수첩과 약속이 지워져요.</p><div class="btnrow" style="justify-content:center"><button class="btn ghost" id="cfNo">아니요</button><button class="btn" id="cfYes">처음부터</button></div></div></div>`);
+  $('cfNo').onclick=()=>$('cf').remove();
+  $('cfYes').onclick=()=>{clearSave();location.reload()};
+}
+
+/* ================= 시작 ================= */
+(function init(){
+  // 표지 별
+  const cv=$('cover');for(let i=0;i<40;i++){const s=document.createElement('div');s.className='star';s.textContent='✦';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.fontSize=(6+Math.random()*12)+'px';s.style.animationDelay=(Math.random()*2.6)+'s';cv.prepend(s)}
+  const ni=$('nameIn');let g='';
+  const ok=()=>{$('startBtn').disabled=!(g&&ni.value.trim().length>=1)};
+  ni.oninput=ok;
+  document.querySelectorAll('.gBtn').forEach(b=>b.onclick=()=>{g=b.dataset.g;document.querySelectorAll('.gBtn').forEach(x=>x.classList.toggle('sel',x===b));ok()});
+  const sv=load();
+  if(sv&&sv.name){$('resumeBtn').style.display='';$('resumeBtn').textContent=`이어하기 (${sv.name}, ${sv.finished?'보고서':'사건 '+(Math.min(sv.ch,CH.length-1)+1)})`}
+  const mb=$('muteBtn');mb.textContent=BGM.isMuted()?'🔇':'🔊';mb.onclick=()=>{mb.textContent=BGM.toggle()?'🔇':'🔊'};
+  const begin=()=>{cv.classList.add('hidden');$('hud').classList.remove('hidden');$('agentTag').textContent='🕵️ '+S.name+' 요원';gauge()};
+  $('startBtn').onclick=()=>{BGM.init();clearSave();S.name=ni.value.trim();S.gender=g;save();begin();prologue()};
+  ni.onkeydown=e=>{if(e.key==='Enter'&&!$('startBtn').disabled)$('startBtn').click()};
+  $('resumeBtn').onclick=()=>{BGM.init();Object.assign(S,sv);begin();if(S.finished&&S.promise){report()}else if(S.ch>=CH.length){ending()}else{runChapter(S.ch)}};
+})();
+</script>
+</body>
+</html>
