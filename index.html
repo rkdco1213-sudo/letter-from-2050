@@ -1029,24 +1029,31 @@ function mission(ci,next){
   panel(`<div class="sheet">
     <span class="tag">🔎 조사 미션 ${ci+1}</span>
     <h2>${c.icon} ${c.title}</h2>
-    <p class="lead">자료 카드 ${nCards}장을 모두 눌러서 읽어 보세요. 다 읽고 <b>30초</b>가 지나면 확인 문제 ${c.quizzes.length}개가 차례로 열려요. 천천히 읽어 보세요!</p>
+    <p class="lead">자료 카드 ${nCards}장을 모두 눌러서 읽어 보세요. 첫 카드를 열고 <b>30초</b>가 지나면 확인 문제 ${c.quizzes.length}개가 차례로 열려요. 천천히 읽어 보세요!</p>
     <div class="cards">${c.cards.map((d,i)=>`<button class="card" data-i="${i}"><span class="check">✅</span><div class="ic">${d[0]}</div><h3>${d[1]}</h3><div class="openme">눌러서 읽기 👆</div><div class="body">${d[2]}</div></button>`).join('')}</div>
     <div id="qWrap" class="step locked" style="border:none;padding-top:0">${quizHTML(c.quizzes,'q')}</div>
     <div class="btnrow"><button class="btn" id="goNext" disabled>현장 출동하기 ▶</button></div>
   </div>`);
   const opened=new Set();let qDone=false;
   document.querySelectorAll('.card').forEach(b=>b.onclick=()=>{if(!b.classList.contains('open'))BGM.sfx('card');b.classList.add('open');opened.add(b.dataset.i);
-    if(opened.size===nCards&&!timerOn){timerOn=true;readTimer()}});
-  let timerOn=false;
+    if(!timerOn){timerOn=true;readTimer()}update()});
+  let timerOn=false,left=WAIT_SEC,unlocked=false,box=null;
+  function update(){
+    if(!box||unlocked)return;
+    const el=$('rtSec');if(el)el.textContent=Math.max(left,0);
+    const msg=$('rtMsg');if(!msg)return;
+    if(left>0)msg.innerHTML=`<span id="rtSec">${left}</span>초 뒤에 확인 문제가 열려요.`+(opened.size<nCards?` (카드 ${opened.size}/${nCards}장 읽음)`:'');
+    else if(opened.size<nCards)msg.textContent=`아직 안 읽은 카드가 ${nCards-opened.size}장 있어요! 모두 읽으면 문제가 열려요.`;
+    else{unlocked=true;box.innerHTML='✅ 이제 문제를 풀어 볼까요?';BGM.sfx('ok');$('qWrap').classList.remove('locked');setTimeout(()=>$('q0')?.scrollIntoView({behavior:'smooth',block:'center'}),300);setTimeout(()=>box?.remove(),2500)}
+  }
   function readTimer(){
-    const box=document.createElement('div');box.className='rtimer';
-    box.innerHTML=`📖 <b>자료를 꼼꼼히 읽는 시간!</b> <span id="rtSec">${WAIT_SEC}</span>초 뒤에 확인 문제가 열려요.<div class="bar"><i id="rtBar"></i></div>`;
-    $('qWrap').before(box);setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'center'}),200);
-    let left=WAIT_SEC;requestAnimationFrame(()=>requestAnimationFrame(()=>{const b=$('rtBar');if(b)b.style.width='100%'}));
+    box=document.createElement('div');box.className='rtimer';
+    box.innerHTML=`📖 <b>자료를 꼼꼼히 읽는 시간!</b> <span id="rtMsg"></span><div class="bar"><i id="rtBar" style="transition:width ${WAIT_SEC}s linear"></i></div>`;
+    $('qWrap').before(box);update();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{const b=$('rtBar');if(b)b.style.width='100%'}));
     const iv=setInterval(()=>{
       if(!document.body.contains(box)){clearInterval(iv);return}
-      left--;const el=$('rtSec');if(el)el.textContent=Math.max(left,0);
-      if(left<=0){clearInterval(iv);box.innerHTML='✅ 이제 문제를 풀어 볼까요?';BGM.sfx('ok');$('qWrap').classList.remove('locked');setTimeout(()=>$('q0')?.scrollIntoView({behavior:'smooth',block:'center'}),300);setTimeout(()=>box.remove(),2500)}
+      left--;update();if(left<=0)clearInterval(iv);
     },1000);
   }
   quizBind(c.quizzes,'q',S.quizFirst,qi=>c.key+'-'+qi,()=>{qDone=true;$('goNext').disabled=false;setTimeout(()=>$('goNext')?.scrollIntoView({behavior:'smooth',block:'center'}),400)});
