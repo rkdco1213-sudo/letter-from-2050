@@ -40,6 +40,10 @@ button{font-family:inherit;cursor:pointer;border:none}
 #gaugeBar{width:110px;height:12px;background:rgba(255,255,255,.3);border-radius:99px;overflow:hidden}
 #gaugeFill{height:100%;width:0;background:linear-gradient(90deg,#7ee8a1,#ffd166);transition:width .8s}
 #gaugeTxt{font-family:'Jua';font-size:15px;white-space:nowrap}
+#starWrap{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.28);padding:5px 12px;border-radius:999px;white-space:nowrap}
+#starBox{font-size:20px;letter-spacing:1px;color:#ffd166}#starTxt{font-family:'Jua';font-size:14px}
+#starWrap.pop{animation:starPop .6s}@keyframes starPop{40%{transform:scale(1.25)}}
+@media (max-width:760px){#starTxt{display:none}#starBox{font-size:17px}#gaugeBar{width:70px}}
 
 /* ---------- 대화 ---------- */
 #portrait{position:absolute;left:50%;bottom:0;transform:translateX(-50%);z-index:3;pointer-events:none;transition:opacity .3s, transform .3s;display:flex;justify-content:center;align-items:flex-end}
@@ -272,6 +276,7 @@ label.q{display:block;font-family:'Jua';font-size:19px;margin:14px 0 6px}
     <div id="agentTag">🕵️ 요원</div>
     <div id="chapDots"></div>
     <button id="muteBtn" title="배경음악 켜기/끄기">🔊</button>
+    <div id="starWrap" title="지금까지 첫 시도에 맞힌 비율"><span id="starBox">☆☆☆☆☆</span><span id="starTxt"></span></div>
     <div id="gaugeWrap"><span>🏘️</span><div id="gaugeBar"><div id="gaugeFill"></div></div><span id="gaugeTxt">0%</span></div>
   </div>
 
@@ -648,7 +653,26 @@ function scores(){
   return {cls,quiz:cnt(S.quizFirst),field:cnt(S.fieldFirst),fin:cnt(S.finalFirst),
     clsT:CH.length*4,quizT:CH.reduce((t,c)=>t+c.quizzes.length,0),fieldT:CH.reduce((t,c)=>t+c.field.filter(x=>x.id).length,0),finT:FINAL.length};
 }
-function gauge(){
+/* 지금까지 푼 것 중 첫 시도에 맞힌 비율 → 별 5개 */
+function starNow(){
+  const all=o=>Object.keys(o||{}).length,ok=o=>Object.values(o||{}).filter(Boolean).length;
+  const done=Object.keys(S.cls||{});
+  const right=ok(S.quizFirst)+ok(S.fieldFirst)+ok(S.finalFirst)+done.reduce((t,k)=>t+(S.cls[k]||0),0);
+  const tried=all(S.quizFirst)+all(S.fieldFirst)+all(S.finalFirst)+done.length*4;
+  if(!tried)return {n:0,rate:0,tried};
+  const rate=right/tried;
+  return {n:rate>=.9?5:rate>=.75?4:rate>=.6?3:rate>=.4?2:1,rate,tried};
+}
+const STAR_WORD=['시작!','다시 힘내요','조금 더!','잘하고 있어요','아주 잘해요','최고 요원!'];
+let _lastStar=-1;
+function starHUD(){
+  const st=starNow(),box=$('starBox');if(!box)return st;
+  box.textContent='★'.repeat(st.n)+'☆'.repeat(5-st.n);
+  $('starTxt').textContent=STAR_WORD[st.n];
+  if(_lastStar>=0&&st.n!==_lastStar){const w=$('starWrap');w.classList.remove('pop');void w.offsetWidth;w.classList.add('pop')}
+  _lastStar=st.n;return st;
+}
+function gauge(){starHUD();
   const s=scores();
   const pct=Math.round((s.cls+s.quiz+s.field+s.fin)/(s.clsT+s.quizT+s.fieldT+s.finT)*100);
   $('gaugeFill').style.width=pct+'%';$('gaugeTxt').textContent='마을 '+pct+'%';
@@ -987,14 +1011,15 @@ function quizBind(list,pre,store,keyFn,onDone){
   });
 }
 /* ---- 입력 길이 점검: 글자 수와 함께 무엇이 부족한지 알려 줌 ---- */
-const goodText=(v,min)=>{v=v.trim();return v.length>=min&&new Set(v.replace(/\s/g,'')).size>=Math.min(5,Math.ceil(min/2))};
+const goodText=(v,min)=>v.trim().length>=min;
 function liveCheck(rules,onChange){
   rules.forEach(r=>{const el=$(r.id);if(!$(r.id+'H'))el.insertAdjacentHTML('afterend',`<div class="fhint" id="${r.id}H"></div>`)});
   const run=()=>{let all=true;
     rules.forEach(r=>{const v=$(r.id).value.trim(),h=$(r.id+'H'),n=v.length;
       if(goodText(v,r.min)){h.className='fhint ok';h.textContent='✅ 좋아요!'}
+      else if(!n){all=false;h.className='fhint';h.textContent=''}
       else{all=false;h.className='fhint';
-        h.textContent=n<r.min?`✏️ [${r.label}] 칸을 더 길게 써 주세요! (지금 ${n}글자 / ${r.min}글자 이상)`:`✏️ 같은 글자만 반복하지 말고, 생각을 문장으로 써 주세요.`}});
+        h.textContent=`✏️ [${r.label}] 칸을 조금 더 길게 써 주세요! (지금 ${n}글자 / ${r.min}글자 이상)`}});
     onChange(all)};
   rules.forEach(r=>$(r.id).addEventListener('input',run));run();
 }
@@ -1062,25 +1087,18 @@ function classify(ci,next){
       <input type="text" id="nS" maxlength="80" placeholder="나라, 지역, 학교, 기업이 함께 할 수 있는 일" value="${esc((S.notes[c.key]||{}).s||'')}">
       <label class="q">💡 위의 두 방법 중 하나를 골라, 왜 도움이 되는지 써 보세요.</label>
       <textarea id="nW" rows="2" maxlength="140" placeholder="( )을/를 하면 ( )하기 때문에 도움이 된다.">${esc((S.notes[c.key]||{}).why||'')}</textarea>
-      <div class="selfstar"><label class="q" style="margin-top:0">⭐ 이번 사건, 나는 얼마나 이해했나요? (별을 눌러 나를 점검해요)</label>
-        <div class="starRow" id="nStars">${[1,2,3,4,5].map(i=>`<button data-s="${i}" aria-label="${i}점">⭐</button>`).join('')}</div>
-        <div class="fhint" id="nStarH"></div></div>
       <div class="count" id="nCnt"></div>
     </div>
     <div class="btnrow"><button class="btn" id="clsDone" disabled>작전 완료 ▶</button></div>
   </div>`);
   const tried={},solved={};let first=0;
-  let star=(S.stars||{})[c.key]||0,textOK=false;
-  const STAR_MSG=['','😢 아직 잘 모르겠군요. 괜찮아요! 위의 작전 카드를 다시 읽고 수첩을 고쳐 써 보세요.','🤔 조금 헷갈리는군요. 위의 작전 카드와 까닭을 한 번 더 살펴봐요.','🙂 절반쯤 이해했어요. 헷갈리는 부분을 친구와 이야기해 봐도 좋아요.','😀 거의 다 이해했어요! 멋져요.','🤩 완벽해요! 친구에게 설명해 줄 수도 있겠어요.'];
-  const paintStar=()=>{document.querySelectorAll('#nStars button').forEach(b=>b.classList.toggle('on',+b.dataset.s<=star));$('nStarH').className='fhint'+(star>=4?' ok':'');$('nStarH').textContent=star?STAR_MSG[star]:'👆 별 1~5개 중에서 골라야 다음으로 갈 수 있어요.'};
-  document.querySelectorAll('#nStars button').forEach(b=>b.onclick=()=>{star=+b.dataset.s;BGM.sfx('card');paintStar();chk()});
+  let textOK=false;
   const chk=()=>{const msg=[];
-    if(!textOK)msg.push('글 쓰기');if(!star)msg.push('별점');
+    if(!textOK)msg.push('글 쓰기');
     const p=$('nP').value.trim(),s2=$('nS').value.trim();if(textOK&&p===s2){msg.push('개인과 사회에 서로 다른 방법');$('nSH').className='fhint';$('nSH').textContent='✏️ 개인 대응과 사회 대응은 서로 다른 방법을 써야 해요.'}
     $('nCnt').textContent=msg.length?'아직 필요해요: '+msg.join(', '):'✅ 모두 썼어요!';
     $('clsDone').disabled=!(!msg.length&&Object.keys(solved).length===c.acts.length)};
-  liveCheck([{id:'nP',min:10,label:'개인 대응'},{id:'nS',min:10,label:'사회 대응'},{id:'nW',min:20,label:'까닭'}],ok=>{textOK=ok;chk()});
-  paintStar();
+  liveCheck([{id:'nP',min:6,label:'개인 대응'},{id:'nS',min:6,label:'사회 대응'},{id:'nW',min:10,label:'까닭'}],ok=>{textOK=ok;chk()});
   document.querySelectorAll('.ab button').forEach(b=>b.onclick=()=>{
     const i=+b.dataset.i,t=b.dataset.t,a=c.acts[i],box=$('act'+i);
     if(solved[i])return;
@@ -1093,7 +1111,7 @@ function classify(ci,next){
       if(Object.keys(solved).length===c.acts.length){$('nStep').classList.remove('locked');chk();setTimeout(()=>$('nStep')?.scrollIntoView({behavior:'smooth',block:'center'}),450)}
     }else{BGM.sfx('no');box.classList.remove('wrong');void box.offsetWidth;box.classList.add('wrong');toast('다시 생각해 봐요! 나 혼자서도 할 수 있는 일일까, 여럿이 함께 시설이나 제도를 만들어야 하는 일일까?')}
   });
-  $('clsDone').onclick=()=>{S.notes[c.key]={p:$('nP').value.trim(),s:$('nS').value.trim(),why:$('nW').value.trim()};(S.stars=S.stars||{})[c.key]=star;S.cls[c.key]=first;S.ch=ci+1;save();gauge();closePanel();next()};
+  $('clsDone').onclick=()=>{S.notes[c.key]={p:$('nP').value.trim(),s:$('nS').value.trim(),why:$('nW').value.trim()};S.cls[c.key]=first;S.ch=ci+1;save();gauge();closePanel();next()};
 }
 
 /* ================= 진행 ================= */
@@ -1335,7 +1353,7 @@ function promiseForm(){
   tb.forEach(b=>b.onclick=()=>{to=b.dataset.t;mark();chk()});
   let textOK=false;
   function chk(){$('pDone').disabled=!(to&&textOK);$('pHint').textContent=!to?'👆 5번에서 누구에게 제안할지 골라 주세요.':!textOK?'✏️ 빨간 안내가 나온 칸을 더 길게 써 주세요.':''}
-  liveCheck([{id:'pWhat',min:8,label:'실천할 일'},{id:'pWhen',min:6,label:'언제, 얼마나'},{id:'pCheck',min:8,label:'확인 방법'},{id:'pWhy',min:20,label:'까닭'},{id:'pAsk',min:12,label:'제안'},{id:'pAskWhy',min:20,label:'까닭'}],ok=>{textOK=ok;chk()});
+  liveCheck([{id:'pWhat',min:3,label:'실천할 일'},{id:'pWhen',min:3,label:'언제, 얼마나'},{id:'pCheck',min:3,label:'확인 방법'},{id:'pWhy',min:3,label:'까닭'},{id:'pAsk',min:3,label:'제안'},{id:'pAskWhy',min:3,label:'까닭'}],ok=>{textOK=ok;chk()});
   $('pDone').onclick=()=>{const v=id=>$(id).value.trim();
     S.promise={what:v('pWhat'),when:v('pWhen'),check:v('pCheck'),why:v('pWhy'),to,ask:v('pAsk'),askWhy:v('pAskWhy')};
     S.ch=CH.length;const again=S.finished;S.finished=true;save();closePanel();again?report():letterScene()};
@@ -1345,7 +1363,7 @@ function report(){
   $('hud').classList.remove('hidden');setScene('ending');
   const pct=gauge();dots(CH.length);
   const sc=scores();
-  const stars=pct>=80?'⭐⭐⭐':pct>=50?'⭐⭐':'⭐';
+  const stN=starNow().n,stars='⭐'.repeat(stN)+'☆'.repeat(5-stN);
   const pr=S.promise;
   panel(`<div class="sheet report">
     <div class="rpHead"><span class="tag">📋 기후 대응 요원 결과 보고서</span><img class="rpAgent" src="img/ch_${spriteKey('me','happy')||'agent_boy'}.webp" alt=""><h2>🕵️ ${esc(S.name)} 요원</h2><div class="stars">${stars}</div>
@@ -1357,7 +1375,7 @@ function report(){
       <div class="rpItem" style="text-align:center"><b>🏆 최종 점검</b><br><span class="jua" style="font-size:26px">${sc.fin}/${sc.finT}</span></div>
     </div></div>
     <h3 class="jua" style="font-size:22px;margin-top:8px">📒 조사 수첩</h3>
-    <div class="rpGrid">${CH.map(c=>{const n=S.notes[c.key]||{};return `<div class="rpItem"><b>${c.icon} ${c.title}</b> <span class="rpStar">${'⭐'.repeat((S.stars||{})[c.key]||0)||''}</span><br>${typeof n==='string'?esc(n):`🙋 ${esc(n.p||'-')}<br>🏛️ ${esc(n.s||'-')}<br>💡 ${esc(n.why||'-')}`}</div>`}).join('')}</div>
+    <div class="rpGrid">${CH.map(c=>{const n=S.notes[c.key]||{};return `<div class="rpItem"><b>${c.icon} ${c.title}</b><br>${typeof n==='string'?esc(n):`🙋 ${esc(n.p||'-')}<br>🏛️ ${esc(n.s||'-')}<br>💡 ${esc(n.why||'-')}`}</div>`}).join('')}</div>
     <div class="rpGrid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:14px">
       <div><h3 class="jua" style="font-size:22px;margin:0 0 8px">🙋 나의 실천 약속</h3>
       <div class="promiseCard"><b>무엇을:</b> ${esc(pr.what||'')}<br><b>언제·얼마나:</b> ${esc(pr.when||'')}<br><b>확인 방법:</b> ${esc(pr.check||'')}<br><b>도움이 되는 까닭:</b> ${esc(pr.why||'')}</div></div>
@@ -1384,7 +1402,7 @@ function report(){
   $('replayV').onclick=()=>finalVideo(()=>{BGM.play('ending');petals(true)});
   $('replayE').onclick=()=>epilogue(()=>{BGM.play('ending');petals(true)});
   $('copyR').onclick=async()=>{
-    const txt=`[기후 대응 요원 보고서] ${S.name}\n마을 게이지 ${pct}% / 확인 문제 ${sc.quiz}/${sc.quizT} / 현장 판단 ${sc.field}/${sc.fieldT} / 대응 분류 ${sc.cls}/${sc.clsT} / 최종 점검 ${sc.fin}/${sc.finT}\n\n[조사 수첩]\n${CH.map(c=>{const n=S.notes[c.key]||{};return typeof n==='string'?`- ${c.title}: ${n}`:`- ${c.title} (이해도 ${'★'.repeat((S.stars||{})[c.key]||0)||'-'})\n  개인: ${n.p||'-'}\n  사회: ${n.s||'-'}\n  까닭: ${n.why||'-'}`}).join('\n')}\n\n[나의 실천 약속]\n무엇을: ${pr.what||''}\n언제·얼마나: ${pr.when||''}\n확인 방법: ${pr.check||''}\n까닭: ${pr.why||''}\n\n[사회에 보내는 제안]\n누구에게: ${(TO[pr.to]||'-').replace(/^\S+ /,'')}\n제안: ${pr.ask||'-'}\n까닭: ${pr.askWhy||'-'}`;
+    const txt=`[기후 대응 요원 보고서] ${S.name}\n마을 게이지 ${pct}% / 확인 문제 ${sc.quiz}/${sc.quizT} / 현장 판단 ${sc.field}/${sc.fieldT} / 대응 분류 ${sc.cls}/${sc.clsT} / 최종 점검 ${sc.fin}/${sc.finT}\n\n[조사 수첩]\n${CH.map(c=>{const n=S.notes[c.key]||{};return typeof n==='string'?`- ${c.title}: ${n}`:`- ${c.title}\n  개인: ${n.p||'-'}\n  사회: ${n.s||'-'}\n  까닭: ${n.why||'-'}`}).join('\n')}\n\n[나의 실천 약속]\n무엇을: ${pr.what||''}\n언제·얼마나: ${pr.when||''}\n확인 방법: ${pr.check||''}\n까닭: ${pr.why||''}\n\n[사회에 보내는 제안]\n누구에게: ${(TO[pr.to]||'-').replace(/^\S+ /,'')}\n제안: ${pr.ask||'-'}\n까닭: ${pr.askWhy||'-'}`;
     try{await navigator.clipboard.writeText(txt);toast('복사했어요!')}catch(e){toast('복사가 안 되면 화면을 캡처해 주세요.')}
   };
   $('restart').onclick=()=>{panelConfirm()};
